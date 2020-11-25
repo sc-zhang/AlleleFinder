@@ -6,6 +6,7 @@ import time
 import allele_backbone as ab
 import allele_gmap as ag
 import allele_blast as abl
+import stat_allele as sa
 
 
 def time_print(info):
@@ -55,25 +56,32 @@ def AlleleFinder(mono, cds, gff3, na, blast_count, wrkdir, threads):
 		time_print("\tGmap result found, skip")
 	
 	time_print("Step3: Generating first allele table")
-	time_print("\tLoading MCScanX results")
-	base_allele = []
-	for fn in os.listdir(mcs_dir):
-		full_fn = os.path.join(mcs_dir, fn)
-		tmp_allele = ab.get_allele_with_mcscanx(full_fn)
-		base_allele.extend(tmp_allele)
-	
-	time_print("\tLoading GMAP result")
-	gff3_db, gene_order = ag.read_gff3(gmap_res)
-	gff3_allele = ag.allele_gmap(gff3_db, threads)
-	base_allele.extend(gff3_allele)
+	if not os.path.exists("backbone.csv"):
+		time_print("\tLoading MCScanX results")
+		base_allele = []
+		for fn in os.listdir(mcs_dir):
+			full_fn = os.path.join(mcs_dir, fn)
+			tmp_allele = ab.get_allele_with_mcscanx(full_fn)
+			base_allele.extend(tmp_allele)
+		
+		time_print("\tLoading GMAP result")
+		gff3_db, gene_order = ag.read_gff3(gmap_res)
+		gff3_allele = ag.allele_gmap(gff3_db, threads)
+		base_allele.extend(gff3_allele)
 
-	time_print("\tWriting allele list backbone")
-	gff3_db, gene_order = ag.read_gff3(gff3)
-	base_allele = ab.split_allele(base_allele, gene_order)
-	base_allele = ab.merge_allele(base_allele)
-	with open("backbone.csv", 'w') as fout:
-		for allele in sorted(base_allele):
-			fout.write("%s\n"%(",".join(sorted(allele))))
+		time_print("\tWriting allele list backbone")
+		gff3_db, gene_order = ag.read_gff3(gff3)
+		base_allele = ab.split_allele(base_allele, gene_order)
+		base_allele = ab.merge_allele(base_allele)
+		with open("backbone.csv", 'w') as fout:
+			for allele in sorted(base_allele):
+				fout.write("%s\n"%(",".join(sorted(allele))))
+	else:
+		time_print("\tallele list backbone found, loading")
+		base_allele = []
+		with open("backbone.csv", 'r') as fin:
+			for line in fin:
+				base_allele.append(line.strip().split(','))
 	
 	backbone = os.path.abspath("backbone.csv")
 	final_allele = base_allele
@@ -108,9 +116,10 @@ def AlleleFinder(mono, cds, gff3, na, blast_count, wrkdir, threads):
 		final_allele.extend(abl.allele_blast(out_blast))
 		final_allele = ab.merge_allele(final_allele)
 		backbone = outpre+".csv"
-		with open(backbone, 'w') as fout:
-			for allele in sorted(final_allele):
-				fout.write("%s\n"%(",".join(sorted(allele))))
+		if not os.path.exists(backbone):
+			with open(backbone, 'w') as fout:
+				for allele in sorted(final_allele):
+					fout.write("%s\n"%(",".join(sorted(allele))))
 	
 	time_print("\tLeaving: blast")
 	os.chdir('..')
@@ -119,6 +128,9 @@ def AlleleFinder(mono, cds, gff3, na, blast_count, wrkdir, threads):
 	with open("allele.csv", 'w') as fout:
 		for allele in sorted(final_allele):
 			fout.write("%s\n"%(",".join(sorted(allele))))
+	
+	time_print("Step6: Statistic")
+	sa.stat_allele("allele.csv", gff3, na, "allele.stat.csv")
 
 	time_print("Finished")
 
