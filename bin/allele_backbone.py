@@ -44,6 +44,8 @@ def split_allele(allele_list, gene_db):
 		tmp_list = allele_list[i]
 		tmp_db = {}
 		for gene in tmp_list:
+			if gene not in gene_db:
+				continue
 			chrn = gene_db[gene][0]
 			if chrn not in tmp_db:
 				tmp_db[chrn] = []
