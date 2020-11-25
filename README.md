@@ -55,3 +55,4 @@ AlleleFinder -m MONO -c CDS -n NUM_ALLELE -g GFF3 [-b BLAST_COUNT] [-w WORKDIR] 
 
 **allele.stat.csv** is the statistics information of allele
 
+**mcscanx/xyz/xyz.tandem** is the tandem genes identified with MCScanX
