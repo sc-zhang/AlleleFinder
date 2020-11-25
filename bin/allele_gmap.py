@@ -1,4 +1,5 @@
 import multiprocessing
+import re
 
 
 def read_gff3(in_gff3):
@@ -18,7 +19,10 @@ def read_gff3(in_gff3):
 				continue
 			sp = int(data[3])
 			ep = int(data[4])
-			gene = data[8].split(';')[1].split('=')[-1]
+			if 'Name' in data[8]:
+				gene = re.findall(r'Name=(.*)', data[8])[0].split(';')[0]
+			else:
+				gene = re.findall(r'ID=(.*)', data[8])[0].split(';')[0]
 			if 'tig' in gene or 'ctg' in gene:
 				continue
 			if chrn not in gff3_db:
