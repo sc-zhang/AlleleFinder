@@ -8,9 +8,9 @@ This software is used for identifying allele genes from polyploid genome.
 
 Software:
 
-&ensp;&ensp;&ensp;&ensp;MCScanX
-&ensp;&ensp;&ensp;&ensp;GMAP
-&ensp;&ensp;&ensp;&ensp;NCBI BLAST+
+&ensp;&ensp;&ensp;&ensp;MCScanX  
+&ensp;&ensp;&ensp;&ensp;GMAP  
+&ensp;&ensp;&ensp;&ensp;NCBI BLAST+  
 
 
 
