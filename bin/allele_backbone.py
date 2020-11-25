@@ -38,17 +38,18 @@ def merge_allele(allele_list):
 	return allele_list
 
 
-def split_allele(allele_list):
+def split_allele(allele_list, gene_db):
 	new_allele_list = []
 	for i in range(0, len(allele_list)):
-		tmp_list = sorted(allele_list[i])
-		last_chr_idx = ""
-		for j in range(0, len(tmp_list)):
-			prefix, chr_idx, gene_idx = re.findall(r'(\S+)\.(\d+)[A-Z](\d+)', tmp_list[j])[0]
-			if chr_idx != last_chr_idx:
-				new_allele_list.append([])
-			new_allele_list[-1].append(tmp_list[j])
-			last_chr_idx = chr_idx
+		tmp_list = allele_list[i]
+		tmp_db = {}
+		for gene in tmp_list:
+			chrn = gene_db[gene][0]
+			if chrn not in tmp_db:
+				tmp_db[chrn] = []
+			tmp_db[chrn].append(gene)
+		for chrn in tmp_db:
+			new_allele_list.append(tmp_db[chrn])			
 	return new_allele_list
 
 

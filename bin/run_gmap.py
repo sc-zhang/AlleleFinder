@@ -11,18 +11,26 @@ def run_gmap(ref_mono, in_cds, allele_cnt, workdir, threads):
 		os.mkdir(workdir)
 	print("Entering %s"%workdir)
 	os.chdir(workdir)
-
-	cmd1 = "gmap_build -D . -d CpDB %s &> /dev/null"%ref_mono
-	fs = os.path.getsize(ref_mono)
-	if fs >= 2**32:
-		cmd2 = "gmapl -D . -d CpDB -f 2 -n %s -t %s %s 1> gmap.gff3 2>/dev/null"%(allele_cnt, threads, in_cds)
-	else:
-		cmd2 = "gmap -D . -d CpDB -f 2 -n %s -t %s %s 1> gmap.gff3 2>/dev/null"%(allele_cnt, threads, in_cds)
 	
-	print("Running command: %s"%cmd1)
-	os.system(cmd1)
-	print("Running command: %s"%cmd1)
-	os.system(cmd2)
+	if not os.path.exists("CpDB"):
+		cmd = "gmap_build -D . -d CpDB %s &> /dev/null"%ref_mono
+		print("Running command: %s"%cmd)
+		os.system(cmd)
+	else:
+		print("Gmap db found, skip")
+	
+	if not os.path.exists("gmap.gff3"):
+		fs = os.path.getsize(ref_mono)
+		if fs >= 2**32:
+			cmd = "gmapl -D . -d CpDB -f 2 -n %s -t %s %s 1> gmap.gff3 2>/dev/null"%(allele_cnt, threads, in_cds)
+		else:
+			cmd = "gmap -D . -d CpDB -f 2 -n %s -t %s %s 1> gmap.gff3 2>/dev/null"%(allele_cnt, threads, in_cds)
+		
+		
+		print("Running command: %s"%cmd)
+		os.system(cmd)
+	else:
+		print("gmap result found, skip")
 	
 	print("Finished")
 

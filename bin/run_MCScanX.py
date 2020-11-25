@@ -52,12 +52,15 @@ def run_MCScanX(in_fa, in_gff3, out_dir, threads):
 				if line.strip() == '' or line[0] == '#':
 					continue
 				data = line.strip().split()
+				chrn = data[0]
+				if 'tig' in chrn or 'ctg' in chrn:
+					continue
 				if data[2] == 'gene':
 					if "Name" in data[8]:
 						id = re.findall(r'Name=(.*)', data[8])[0].split(';')[0]
 					else:
 						id = re.findall(r'ID=(.*)', data[8])[0].split(';')[0]
-					chrn = data[0]
+					
 					if chrn not in gff3_db:
 						gff3_db[chrn] = []
 					gff3_db[chrn].append([id, int(data[3]), int(data[4])])
