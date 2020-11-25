@@ -18,12 +18,13 @@ def get_opts():
 	group.add_argument('-c', '--cds', help="CDS fasta", required=True)
 	group.add_argument('-n', '--num_allele', help="number of allele", type=int, required=True)
 	group.add_argument('-g', '--gff3', help="GFF3 file", required=True)
+	group.add_argument('-b', '--blast_count', help="blast count, default: 2", type=int, default=2)
 	group.add_argument('-w', '--workdir', help="workdir, default: wrkdir", default="wrkdir")
 	group.add_argument('-t', '--threads', help="threads, default: 12", default=12, type=int)
 	return group.parse_args()
 
 
-def AlleleFinder(mono, cds, gff3, na, wrkdir, threads):
+def AlleleFinder(mono, cds, gff3, na, blast_count, wrkdir, threads):
 	if not os.path.exists(wrkdir):
 		os.mkdir(wrkdir)
 	
@@ -38,7 +39,7 @@ def AlleleFinder(mono, cds, gff3, na, wrkdir, threads):
 	time_print("Step1: running MCScanX")
 	mcs_dir = "mcscanx/xyz/xyz.html"
 	if not os.path.exists(mcs_dir):
-		cmd = "%s/run_MCScanX.py %s %s mcscanx %d &> step1.log"%(script_dir, cds, gff3, threads)
+		cmd = "python %s/run_MCScanX.py %s %s mcscanx %d &> /dev/null"%(script_dir, cds, gff3, threads)
 		time_print("\tRunning: %s"%cmd)
 		os.system(cmd)
 	else:
@@ -47,18 +48,17 @@ def AlleleFinder(mono, cds, gff3, na, wrkdir, threads):
 	time_print("Step2: running gmap")
 	gmap_res = "gmap/gmap.gff3"
 	if not os.path.exists(gmap_res):
-		cmd = "%s/run_gmap.py %s %s %d gmap %d &> step2.log"%(script_dir, mono, cds, na, threads)
+		cmd = "python %s/run_gmap.py %s %s %d gmap %d &> /dev/null"%(script_dir, mono, cds, na, threads)
 		time_print("\tRunning: %s"%cmd)
 		os.system(cmd)
 	else:
 		time_print("\tGmap result found, skip")
 	
-	time_print("Step3: Generating allele table")
+	time_print("Step3: Generating first allele table")
 	time_print("\tLoading MCScanX results")
 	base_allele = []
 	for fn in os.listdir(mcs_dir):
 		full_fn = os.path.join(mcs_dir, fn)
-		time_print("\tLoading: %s"%full_fn)
 		tmp_allele = ab.get_allele_with_mcscanx(full_fn)
 		base_allele.extend(tmp_allele)
 	
@@ -67,14 +67,59 @@ def AlleleFinder(mono, cds, gff3, na, wrkdir, threads):
 	gff3_allele = ag.allele_gmap(gff3_db, threads)
 	base_allele.extend(gff3_allele)
 
-	time_print("\tWriting allele list")
+	time_print("\tWriting allele list backbone")
 	gff3_db, gene_order = ag.read_gff3(gff3)
 	base_allele = ab.split_allele(base_allele, gene_order)
-	allele_list = ab.merge_allele(base_allele)
-	with open("result.csv", 'w') as fout:
-		for allele in sorted(allele_list):
+	base_allele = ab.merge_allele(base_allele)
+	with open("backbone.csv", 'w') as fout:
+		for allele in sorted(base_allele):
 			fout.write("%s\n"%(",".join(sorted(allele))))
 	
+	backbone = os.path.abspath("backbone.csv")
+	final_allele = base_allele
+
+	time_print("Step4: running blast")
+	if not os.path.exists("blast"):
+		os.mkdir("blast")
+	time_print("\tEntering: blast")
+	os.chdir("blast")
+
+	for i in range(0, blast_count):
+		time_print("\tStarting iteration %02d"%(i+1))
+		outpre = "iter%02d"%(i+1)
+		single_fa = outpre+"_single.fa"
+		multi_fa = outpre+"_multi.fa"
+		out_blast = outpre+".blast"
+		if not(os.path.exists(single_fa) and os.path.exists(multi_fa)):
+			cmd = "python %s/split_fasta_with_allele.py %s %s %s"%(script_dir, cds, backbone, outpre)
+			time_print("\tRunning command: %s"%cmd)
+			os.system(cmd)
+		else:
+			time_print("\tIter %02d, Fasta file found, skip"%(i+1))
+		if not os.path.exists(out_blast):
+			cmd1 = "makeblastdb -in %s -dbtype nucl -out blastdb%02d &> /dev/null"%(multi_fa, i+1)
+			cmd2 = "blastn -query %s -db blastdb%02d -out %s -evalue 1e-3 -outfmt 6 -num_alignments 1 -num_threads %d &> /dev/null"%(single_fa, i+1, out_blast, threads)
+			time_print("\tRunning command: %s"%cmd1)
+			os.system(cmd1)
+			time_print("\tRunning command: %s"%cmd2)
+			os.system(cmd2)
+		else:
+			time_print("\tIter %02d, blast file found, skip"%(i+1))
+		final_allele.extend(abl.allele_blast(out_blast))
+		final_allele = ab.merge_allele(final_allele)
+		backbone = outpre+".csv"
+		with open(backbone, 'w') as fout:
+			for allele in sorted(final_allele):
+				fout.write("%s\n"%(",".join(sorted(allele))))
+	
+	time_print("\tLeaving: blast")
+	os.chdir('..')
+
+	time_print("Step5: Writing allele table")
+	with open("allele.csv", 'w') as fout:
+		for allele in sorted(final_allele):
+			fout.write("%s\n"%(",".join(sorted(allele))))
+
 	time_print("Finished")
 
 
@@ -84,6 +129,7 @@ if __name__ == "__main__":
 	cds = opts.cds
 	na = opts.num_allele
 	gff3 = opts.gff3
+	blast_count = opts.blast_count
 	wrkdir = opts.workdir
 	threads = opts.threads
-	AlleleFinder(mono, cds, gff3, na, wrkdir, threads)
+	AlleleFinder(mono, cds, gff3, na, blast_count, wrkdir, threads)
