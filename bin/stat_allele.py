@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+import sys
 import re
 
 
@@ -61,3 +63,11 @@ def stat_allele(in_csv, in_gff3, allele_num, out_stat):
 		for cnt in sorted(total_db, reverse=True):
 			out_info.append(str(total_db[cnt]))
 		fout.write(','.join(out_info)+'\n')
+
+
+if __name__ == '__main__':
+	if len(sys.argv) < 5:
+		print("Usage: python %s <in_csv> <in_gff3> <allele_number> <out_stat>"%sys.argv[0])
+	else:
+		in_csv, in_gff3, allele_num, out_stat = sys.argv[1:]
+		stat_allele(in_csv, in_gff3, int(allele_num), out_stat)
