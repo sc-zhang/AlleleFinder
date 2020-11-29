@@ -15,7 +15,7 @@ def check_fasta_type(in_fa):
 				return "NUCL"
 
 
-def run_MCScanX(in_fa, in_gff3, allele_num, out_dir, threads):
+def run_MCScanX(in_fa, in_gff3, out_dir, threads):
 	in_fa = os.path.abspath(in_fa)
 	in_gff3 = os.path.abspath(in_gff3)
 	if not os.path.exists(out_dir):
@@ -30,13 +30,12 @@ def run_MCScanX(in_fa, in_gff3, allele_num, out_dir, threads):
 	if not os.path.exists("xyz/xyz.blast"):
 		print("Running blast")
 		fa_type = check_fasta_type(in_fa)
-		aln_cnt = max(allele_num, 5)
 		if fa_type == "NUCL":
 			cmd1 = "makeblastdb -in %s -dbtype nucl -out blastdb &> /dev/null"%in_fa
-			cmd2 = "blastn -query %s -db blastdb -out xyz/xyz.blast -evalue 1e-10 -outfmt 6 -num_alignments %d -num_threads %d &> /dev/null"%(in_fa, aln_cnt, threads)
+			cmd2 = "blastn -query %s -db blastdb -out xyz/xyz.blast -evalue 1e-10 -outfmt 6 -num_alignments 5 -num_threads %d &> /dev/null"%(in_fa, threads)
 		else:
 			cmd1 = "makeblastdb -in %s -dbtype prot -out blastdb &> /dev/null"%in_fa
-			cmd2 = "blastp -query %s -db blastdb -out xyz/xyz.blast -evalue 1e-10 -outfmt 6 -num_alignments %d -num_threads %d &> /dev/null"%(in_fa, aln_cnt, threads)
+			cmd2 = "blastp -query %s -db blastdb -out xyz/xyz.blast -evalue 1e-10 -outfmt 6 -num_alignments 5 -num_threads %d &> /dev/null"%(in_fa, threads)
 		
 		print("Running command: %s"%cmd1)
 		os.system(cmd1)
@@ -53,7 +52,7 @@ def run_MCScanX(in_fa, in_gff3, allele_num, out_dir, threads):
 				if line.strip() == '' or line[0] == '#':
 					continue
 				data = line.strip().split()
-				chrn = data[0]
+				chrn = re.findall(r'([A-Za-z]+\d+)', data[0])[0]
 				if 'tig' in chrn or 'ctg' in chrn:
 					continue
 				if data[2] == 'gene':
@@ -85,8 +84,8 @@ def run_MCScanX(in_fa, in_gff3, allele_num, out_dir, threads):
 
 
 if __name__ == "__main__":
-	if len(sys.argv) < 6:
-		print("Usage: python %s <in_fasta> <in_gff3> <allele_num> <out_dir> <threads>"%sys.argv[0])
+	if len(sys.argv) < 5:
+		print("Usage: python %s <in_fasta> <in_gff3> <out_dir> <threads>"%sys.argv[0])
 	else:
-		in_fa, in_gff3, allele_num, out_dir, threads = sys.argv[1:]
-		run_MCScanX(in_fa, in_gff3, int(allele_num), out_dir, int(threads))
+		in_fa, in_gff3, out_dir, threads = sys.argv[1:]
+		run_MCScanX(in_fa, in_gff3, out_dir, int(threads))
