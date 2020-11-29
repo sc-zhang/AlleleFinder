@@ -40,7 +40,7 @@ def AlleleFinder(mono, cds, gff3, na, blast_count, wrkdir, threads):
 	time_print("Step1: running MCScanX")
 	mcs_dir = "mcscanx/xyz/xyz.html"
 	if not os.path.exists(mcs_dir):
-		cmd = "python %s/run_MCScanX.py %s %s mcscanx %d &> /dev/null"%(script_dir, cds, gff3, threads)
+		cmd = "python %s/run_MCScanX.py %s %s %d mcscanx %d &> /dev/null"%(script_dir, cds, gff3, na, threads)
 		time_print("\tRunning: %s"%cmd)
 		os.system(cmd)
 	else:
