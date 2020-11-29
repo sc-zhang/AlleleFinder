@@ -11,7 +11,7 @@ def read_gff3(in_gff3):
 			if line.strip() == '' or line[0] == '#':
 				continue
 			data = line.strip().split()
-			chrn = data[0]
+			chrn = re.findall(r'([A-Za-z]+\d+).*', data[0])[0]
 			if 'ctg' in chrn or 'tig' in chrn:
 				continue
 			type = data[2]
