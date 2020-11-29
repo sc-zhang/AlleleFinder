@@ -113,7 +113,7 @@ def AlleleFinder(mono, cds, gff3, na, blast_count, wrkdir, threads):
 			os.system(cmd2)
 		else:
 			time_print("\tIter %02d, blast file found, skip"%(i+1))
-		final_allele.extend(abl.allele_blast(out_blast))
+		final_allele.extend(abl.allele_blast(out_blast, 0.8))
 		final_allele = ab.merge_allele(final_allele)
 		backbone = outpre+".csv"
 		if not os.path.exists(backbone):

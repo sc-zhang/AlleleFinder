@@ -30,7 +30,7 @@ def split_fasta_with_allele(in_fa, in_allele, out_pre):
 				for gene in data:
 					if gene.strip() != '':
 						multi_list.append(gene)
-	
+		
 	with open(out_pre+'_single.fa', 'w') as fout:
 		for id in single_list:
 			fout.write(">%s\n%s\n"%(id, fa_db[id]))
