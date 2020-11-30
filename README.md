@@ -30,7 +30,7 @@ source ~/.bash_profile
 ## Usage
 
 ```bash
-AlleleFinder [-h] -m MONO -d MONO_CDS -f MONO_GFF3 -c CDS -g GFF3 -n                     NUM_ALLELE [-b BLAST_COUNT] [-i BLAST_IDENTITY] [-e TE] [-j TE_OVERLAP] [-w WORKDIR] [-t THREADS]
+AlleleFinder [-h] -m MONO -d MONO_CDS -f MONO_GFF3 -c CDS -g GFF3 -n NUM_ALLELE [-b BLAST_COUNT] [-i BLAST_IDENTITY] [-e TE] [-j TE_OVERLAP] [-w WORKDIR] [-t THREADS]
 ```
 
 **-m, --mono** fasta file of mono genome
@@ -61,13 +61,13 @@ AlleleFinder [-h] -m MONO -d MONO_CDS -f MONO_GFF3 -c CDS -g GFF3 -n            
 
 ## Results
 
-**Without TE filter**
+1. **Without TE filter**
 
 **allele.adjusted.txt** is the file contain all allele genes
 
 **allele.adjusted.*.stat** are the statistics information of allele
 
-**With TE filter**
+2. **With TE filter**
 
 **allele.adjusted.nonTEs.txt** is the file contain all allele genes
 
