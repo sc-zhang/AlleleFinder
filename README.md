@@ -30,10 +30,14 @@ source ~/.bash_profile
 ## Usage
 
 ```bash
-AlleleFinder -m MONO -c CDS -n NUM_ALLELE -g GFF3 [-b BLAST_COUNT] [-w WORKDIR] [-t THREADS]
+AlleleFinder -m MONO -d MONO_CDS -f MONO_GFF3 -c CDS -n NUM_ALLELE -g GFF3 [-b BLAST_COUNT] [-w WORKDIR] [-t THREADS]
 ```
 
 **-m, --mono** fasta file of mono genome
+
+**-d, --mono_cds** cds file of mono genome
+
+**-f, --mono_gff3** gff3 file of mono genome
 
 **-c, --cds** cds file of polyploid genome
 
@@ -51,8 +55,8 @@ AlleleFinder -m MONO -c CDS -n NUM_ALLELE -g GFF3 [-b BLAST_COUNT] [-w WORKDIR] 
 
 ## Results
 
-**allele.csv** is the file contain all allele genes
+**allele.formated.txt** is the file contain all allele genes
 
-**allele.stat.csv** is the statistics information of allele
+**allele.formated.stat** is the statistics information of allele
 
 **mcscanx/xyz/xyz.tandem** is the tandem genes identified with MCScanX
