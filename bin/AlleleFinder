@@ -22,12 +22,13 @@ def get_opts():
 	group.add_argument('-g', '--gff3', help="GFF3 file of polyploid", required=True)
 	group.add_argument('-n', '--num_allele', help="number of allele", type=int, required=True)
 	group.add_argument('-b', '--blast_count', help="blast count, default: 2", type=int, default=2)
+	group.add_argument('-i', '--blast_identity', help="blast identity threshold, default: 80", type=float, default=80)
 	group.add_argument('-w', '--workdir', help="workdir, default: wrkdir", default="wrkdir")
 	group.add_argument('-t', '--threads', help="threads, default: 12", default=12, type=int)
 	return group.parse_args()
 
 
-def AlleleFinder(mono, mono_cds, mono_gff3, cds, gff3, na, blast_count, wrkdir, threads):
+def AlleleFinder(mono, mono_cds, mono_gff3, cds, gff3, na, blast_count, iden_thres, wrkdir, threads):
 	if not os.path.exists(wrkdir):
 		os.mkdir(wrkdir)
 	
@@ -118,7 +119,7 @@ def AlleleFinder(mono, mono_cds, mono_gff3, cds, gff3, na, blast_count, wrkdir, 
 			os.system(cmd2)
 		else:
 			time_print("\tIter %02d, blast file found, skip"%(i+1))
-		final_allele.extend(abl.allele_blast(out_blast, 0.8))
+		final_allele.extend(abl.allele_blast(out_blast, iden_thres))
 		final_allele = ab.merge_allele(final_allele)
 		backbone = outpre+".csv"
 		if not os.path.exists(backbone):
@@ -162,7 +163,7 @@ def AlleleFinder(mono, mono_cds, mono_gff3, cds, gff3, na, blast_count, wrkdir, 
 	time_print("Leaving: 04.format")
 	os.chdir("..")
 	
-	cmd = "python %s/format_allele_table.py allele.csv %s %s %s %s %d allele.formated.txt &> /dev/null"%(script_dir, mono_gff3, gff3, out_blast, tandem_file, na)
+	cmd = "python %s/format_allele_table.py allele.csv %s %s %s %f %s %d allele.formated.txt &> /dev/null"%(script_dir, mono_gff3, gff3, out_blast, iden_thres, tandem_file, na)
 	time_print("\tRunning command: %s"%cmd)
 	os.system(cmd)
 
@@ -183,6 +184,7 @@ if __name__ == "__main__":
 	gff3 = opts.gff3
 	na = opts.num_allele
 	blast_count = opts.blast_count
+	iden_thres = opts.blast_identity
 	wrkdir = opts.workdir
 	threads = opts.threads
-	AlleleFinder(mono, mono_cds, mono_gff3, cds, gff3, na, blast_count, wrkdir, threads)
+	AlleleFinder(mono, mono_cds, mono_gff3, cds, gff3, na, blast_count, iden_thres, wrkdir, threads)

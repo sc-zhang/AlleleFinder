@@ -3,7 +3,7 @@ import sys
 import re
 
 
-def format_allel_table(in_allele, mono_gff3, hap_gff3, blast, tandem, allele_num, out_allele):
+def format_allel_table(in_allele, mono_gff3, hap_gff3, blast, iden, tandem, allele_num, out_allele):
 	print("Loading blast")
 	blast_db = {}
 	with open(blast, 'r') as fin:
@@ -11,7 +11,10 @@ def format_allel_table(in_allele, mono_gff3, hap_gff3, blast, tandem, allele_num
 			data = line.strip().split()
 			hap_gn = data[0]
 			mono_gn = data[1]
-			bs = float(data[-1])
+			bi = float(data[2])
+			if bi < iden:
+				continue
+			bs = data[-1]
 			if hap_gn not in blast_db:
 				blast_db[hap_gn] = [mono_gn, bs]
 			if bs > blast_db[hap_gn][-1]:
@@ -117,8 +120,8 @@ def format_allel_table(in_allele, mono_gff3, hap_gff3, blast, tandem, allele_num
 
 
 if __name__ == "__main__":
-	if len(sys.argv) < 8:
-		print("Usage: python %s <in_allele> <mono_gff3> <hap_gff3> <hap_mono_blast> <tandem_list> <allele_number> <out_allele>"%sys.argv[0])
+	if len(sys.argv) < 9:
+		print("Usage: python %s <in_allele> <mono_gff3> <hap_gff3> <hap_mono_blast> <iden_threshold> <tandem_list> <allele_number> <out_allele>"%sys.argv[0])
 	else:
-		in_allele, mono_gff3, hap_gff3, blast, tandem, allele_num, out_allele = sys.argv[1:]
-		format_allel_table(in_allele, mono_gff3, hap_gff3, blast, tandem, int(allele_num), out_allele)
+		in_allele, mono_gff3, hap_gff3, blast, iden, tandem, allele_num, out_allele = sys.argv[1:]
+		format_allel_table(in_allele, mono_gff3, hap_gff3, blast, float(iden), tandem, int(allele_num), out_allele)

@@ -30,7 +30,7 @@ source ~/.bash_profile
 ## Usage
 
 ```bash
-AlleleFinder -m MONO -d MONO_CDS -f MONO_GFF3 -c CDS -n NUM_ALLELE -g GFF3 [-b BLAST_COUNT] [-w WORKDIR] [-t THREADS]
+AlleleFinder -m MONO -d MONO_CDS -f MONO_GFF3 -c CDS -n NUM_ALLELE -g GFF3 [-b BLAST_COUNT] [-i BLAST_IDENTITY] [-w WORKDIR] [-t THREADS]
 ```
 
 **-m, --mono** fasta file of mono genome
@@ -46,6 +46,8 @@ AlleleFinder -m MONO -d MONO_CDS -f MONO_GFF3 -c CDS -n NUM_ALLELE -g GFF3 [-b B
 **-n, --num_allele** number of allele
 
 **-b, --blast_count** iteration count for running blast, default: 2
+
+**-i, --blast_identity** threshold of blast identity, default: 80
 
 **-w, --workdir** work directory, default: wrkdir
 
