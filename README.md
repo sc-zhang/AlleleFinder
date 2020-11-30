@@ -30,7 +30,7 @@ source ~/.bash_profile
 ## Usage
 
 ```bash
-AlleleFinder -m MONO -d MONO_CDS -f MONO_GFF3 -c CDS -n NUM_ALLELE -g GFF3 [-b BLAST_COUNT] [-i BLAST_IDENTITY] [-w WORKDIR] [-t THREADS]
+AlleleFinder [-h] -m MONO -d MONO_CDS -f MONO_GFF3 -c CDS -g GFF3 -n                     NUM_ALLELE [-b BLAST_COUNT] [-i BLAST_IDENTITY] [-e TE] [-j TE_OVERLAP] [-w WORKDIR] [-t THREADS]
 ```
 
 **-m, --mono** fasta file of mono genome
@@ -49,6 +49,10 @@ AlleleFinder -m MONO -d MONO_CDS -f MONO_GFF3 -c CDS -n NUM_ALLELE -g GFF3 [-b B
 
 **-i, --blast_identity** threshold of blast identity, default: 80
 
+**-e, --TE** TE file for filtering, default: NULL
+
+**-j, --TE_overlap** threshold of TE overlap, default: 0.3, only effect when TE is not NULL
+
 **-w, --workdir** work directory, default: wrkdir
 
 **-t, --threads** threads, default: 12
@@ -57,6 +61,14 @@ AlleleFinder -m MONO -d MONO_CDS -f MONO_GFF3 -c CDS -n NUM_ALLELE -g GFF3 [-b B
 
 ## Results
 
+**Without TE filter**
+
 **allele.adjusted.txt** is the file contain all allele genes
 
 **allele.adjusted.*.stat** are the statistics information of allele
+
+**With TE filter**
+
+**allele.adjusted.nonTEs.txt** is the file contain all allele genes
+
+**allele.adjusted.nonTEs.*.stat** are the statistics information of allele
