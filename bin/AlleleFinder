@@ -168,7 +168,7 @@ def AlleleFinder(mono, mono_cds, mono_gff3, cds, gff3, na, blast_count, iden_thr
 	os.system(cmd)
 
 	time_print("Step8: Statistics")
-	cmd = "%s/stat_formated_allele.py allele.formated.txt %s allele.formated.stat &> /dev/null"%(script_dir, gff3)
+	cmd = "python %s/stat_formated_allele.py allele.formated.txt %s allele.formated.stat &> /dev/null"%(script_dir, gff3)
 	time_print("\tRunning command: %s"%cmd)
 	os.system(cmd)
 
