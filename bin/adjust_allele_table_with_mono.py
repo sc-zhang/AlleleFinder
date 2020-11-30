@@ -3,10 +3,10 @@ import sys
 import re
 
 
-def adjust_allele_table(in_allele, mono_gff3, hap_gff3, blast, iden, tandem, allele_num, out_allele):
-	print("Loading blast")
-	blast_db = {}
-	with open(blast, 'r') as fin:
+def adjust_allele_table(in_allele, mono_gff3, hap_gff3, mono_blast, hap_blast, iden, tandem, allele_num, out_allele):
+	print("Loading mono blast")
+	mono_blast_db = {}
+	with open(mono_blast, 'r') as fin:
 		for line in fin:
 			data = line.strip().split()
 			hap_gn = data[0]
@@ -15,11 +15,25 @@ def adjust_allele_table(in_allele, mono_gff3, hap_gff3, blast, iden, tandem, all
 			if bi < iden:
 				continue
 			bs = data[-1]
-			if hap_gn not in blast_db:
-				blast_db[hap_gn] = [mono_gn, bs]
-			if bs > blast_db[hap_gn][-1]:
-				blast_db[hap_gn] = [mono_gn, bs]
+			if hap_gn not in mono_blast_db:
+				mono_blast_db[hap_gn] = [mono_gn, bs]
+			if bs > mono_blast_db[hap_gn][-1]:
+				mono_blast_db[hap_gn] = [mono_gn, bs]
 	
+	print("Loading hap blast")
+	hap_blast_db = {}
+	with open(hap_blast, 'r') as fin:
+		for line in fin:
+			data = line.strip().split()
+			gn1 = data[0]
+			gn2 = data[1]
+			bi = float(data[2])
+			if gn1 != gn2 and bi >= iden:
+				if gn1 not in hap_blast_db:
+					hap_blast_db[gn1] = [gn2, bi]
+				elif bi > hap_blast_db[gn1][1]:
+					hap_blast_db[gn1] = [gn2, bi]
+
 	print("Loading mono gff3")
 	mono_db = {}
 	with open(mono_gff3, 'r') as fin:
@@ -32,7 +46,7 @@ def adjust_allele_table(in_allele, mono_gff3, hap_gff3, blast, iden, tandem, all
 				if id not in mono_db:
 					mono_db[id] = [data[0], int(data[3])]
 	
-	print("Loading hap_gff3")
+	print("Loading hap gff3")
 	hap_db = {}
 	with open(hap_gff3, 'r') as fin:
 		for line in fin:
@@ -63,9 +77,15 @@ def adjust_allele_table(in_allele, mono_gff3, hap_gff3, blast, iden, tandem, all
 			for id in data:
 				hchrn, hpos = hap_db[id]
 				hidx = ord(hchrn[-1])-65
-				if id not in blast_db:
+				if id not in mono_blast_db:
+					if id not in hap_blast_db:
+						continue
+					mono_id = hap_blast_db[id][0]
+				else:
+					mono_id = id
+				if mono_id not in mono_blast_db or mono_id not in data:
 					continue
-				mono_gn = blast_db[id][0]
+				mono_gn = mono_blast_db[mono_id][0]
 				if mono_gn not in mono_db:
 					continue
 				if mono_gn not in info_db:
@@ -120,8 +140,8 @@ def adjust_allele_table(in_allele, mono_gff3, hap_gff3, blast, iden, tandem, all
 
 
 if __name__ == "__main__":
-	if len(sys.argv) < 9:
-		print("Usage: python %s <in_allele> <mono_gff3> <hap_gff3> <hap_mono_blast> <iden_threshold> <tandem_list> <allele_number> <out_allele>"%sys.argv[0])
+	if len(sys.argv) < 10:
+		print("Usage: python %s <in_allele> <mono_gff3> <hap_gff3> <hap_mono_blast> <hap_hap_blast> <iden_threshold> <tandem_list> <allele_number> <out_allele>"%sys.argv[0])
 	else:
-		in_allele, mono_gff3, hap_gff3, blast, iden, tandem, allele_num, out_allele = sys.argv[1:]
-		adjust_allele_table(in_allele, mono_gff3, hap_gff3, blast, float(iden), tandem, int(allele_num), out_allele)
+		in_allele, mono_gff3, hap_gff3, mono_blast, hap_blast, iden, tandem, allele_num, out_allele = sys.argv[1:]
+		adjust_allele_table(in_allele, mono_gff3, hap_gff3, mono_blast, hap_blast, float(iden), tandem, int(allele_num), out_allele)

@@ -48,6 +48,7 @@ def AlleleFinder(mono, mono_cds, mono_gff3, cds, gff3, na, blast_count, iden_thr
 	time_print("Step1: running MCScanX")
 	mcs_dir = "01.mcscanx/xyz/xyz.html"
 	tandem_file = os.path.abspath("01.mcscanx/xyz/xyz.tandem")
+	hap_blast_file = os.path.abspath("01.mcscanx/xyz/xyz.blast")
 	if not os.path.exists(mcs_dir):
 		cmd = "python %s/run_MCScanX.py %s %s 01.mcscanx %d &> /dev/null"%(script_dir, cds, gff3, threads)
 		time_print("\tRunning: %s"%cmd)
@@ -164,7 +165,7 @@ def AlleleFinder(mono, mono_cds, mono_gff3, cds, gff3, na, blast_count, iden_thr
 	
 	allele_file = "allele.adjusted.txt"
 	if not os.path.exists(allele_file):
-		cmd = "python %s/adjust_allele_table_with_mono.py allele.csv %s %s %s %f %s %d allele.adjusted.txt &> /dev/null"%(script_dir, mono_gff3, gff3, out_blast, iden_thres, tandem_file, na)
+		cmd = "python %s/adjust_allele_table_with_mono.py allele.csv %s %s %s %s %f %s %d allele.adjusted.txt &> /dev/null"%(script_dir, mono_gff3, gff3, out_blast, hap_blast_file, iden_thres, tandem_file, na)
 		time_print("\tRunning command: %s"%cmd)
 		os.system(cmd)
 	else:
