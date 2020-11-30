@@ -57,8 +57,10 @@ def stat_formated_allele(in_allele, in_hap_gff3, out_stat):
 					max_cnt = chrn_cnt_db[chrn]
 					max_chrn = chrn
 			if max_chrn not in allele_summary:
-				allele_summary[max_chrn] = [[0 for i in range(0, allele_cnt)], 0, 0]
+				# [[allele count list], tandem count, dispersely count, line count]
+				allele_summary[max_chrn] = [[0 for i in range(0, allele_cnt)], 0, 0, 0]
 			
+			allele_summary[max_chrn][-1] += 1
 			for i in range(0, allele_cnt):
 				allele_summary[max_chrn][0][i] += allele_cnt_list[i]
 			
@@ -70,17 +72,18 @@ def stat_formated_allele(in_allele, in_hap_gff3, out_stat):
 		allele_list = []
 		for i in range(0, allele_cnt):
 			allele_list.append("Allele %s"%chr(65+i))
-		fout.write("#CHR,%s,Tandem,Dispersely\n"%(','.join(allele_list)))
-		sum_info = [0 for i in range(0, allele_cnt+2)]
+		fout.write("#CHR,Line count,%s,Tandem,Dispersely\n"%(','.join(allele_list)))
+		sum_info = [0 for i in range(0, allele_cnt+3)]
 		for chrn in sorted(allele_summary):
-			info = [chrn]
+			info = [chrn, allele_summary[chrn][3]]
 			info.extend(allele_summary[chrn][0])
 			info.append(allele_summary[chrn][1])
 			info.append(allele_summary[chrn][2])
+			sum_info[0] += allele_summary[chrn][3]
 			for i in range(0, len(allele_summary[chrn][0])):
-				sum_info[i] += allele_summary[chrn][0][i]
-			sum_info[allele_cnt] += allele_summary[chrn][1]
-			sum_info[allele_cnt+1] += allele_summary[chrn][2]
+				sum_info[i+1] += allele_summary[chrn][0][i]
+			sum_info[allele_cnt+1] += allele_summary[chrn][1]
+			sum_info[allele_cnt+2] += allele_summary[chrn][2]
 			fout.write("%s\n"%(','.join(map(str, info))))
 		fout.write("Total,%s\n"%(','.join(map(str, sum_info))))
 	print("Finished")
