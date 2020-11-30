@@ -6,7 +6,6 @@ import time
 import allele_backbone as ab
 import allele_gmap as ag
 import allele_blast as abl
-import stat_allele as sa
 
 
 def time_print(info):
@@ -135,16 +134,12 @@ def AlleleFinder(mono, mono_cds, mono_gff3, cds, gff3, na, blast_count, iden_thr
 		for allele in sorted(final_allele):
 			fout.write("%s\n"%(",".join(sorted(allele))))
 	
-	time_print("Step6: Statistics")
-	if not os.path.exists("allele.stat.csv"):
-		sa.stat_allele("allele.csv", gff3, na, "allele.stat.csv")
+	time_print("Step6: Adjusting with mono annotation")
+	if not(os.path.exists("04.mono_adjust")):
+		os.mkdir("04.mono_adjust")
 
-	time_print("Step7: Formating allele table")
-	if not(os.path.exists("04.format")):
-		os.mkdir("04.format")
-
-	time_print("\tEntering: 04.format")
-	os.chdir("04.format")
+	time_print("\tEntering: 04.mono_adjust")
+	os.chdir("04.mono_adjust")
 
 	mono_fn = mono_cds.split('/')[-1].split('.')[0]
 	hap_fn = cds.split('/')[-1].split('.')[0]
@@ -160,15 +155,15 @@ def AlleleFinder(mono, mono_cds, mono_gff3, cds, gff3, na, blast_count, iden_thr
 		time_print("\tBlast file found, skip")
 	out_blast = os.path.abspath(out_blast)
 
-	time_print("Leaving: 04.format")
+	time_print("Leaving: 04.mono_adjust")
 	os.chdir("..")
 	
-	cmd = "python %s/format_allele_table.py allele.csv %s %s %s %f %s %d allele.formated.txt &> /dev/null"%(script_dir, mono_gff3, gff3, out_blast, iden_thres, tandem_file, na)
+	cmd = "python %s/adjust_allele_table_with_mono.py allele.csv %s %s %s %f %s %d allele.adjusted.txt &> /dev/null"%(script_dir, mono_gff3, gff3, out_blast, iden_thres, tandem_file, na)
 	time_print("\tRunning command: %s"%cmd)
 	os.system(cmd)
 
-	time_print("Step8: Statistics")
-	cmd = "python %s/stat_formated_allele.py allele.formated.txt %s allele.formated.stat &> /dev/null"%(script_dir, gff3)
+	time_print("Step7: Statistics")
+	cmd = "python %s/stat_allele_info.py allele.adjusted.txt %s allele.adjusted &> /dev/null"%(script_dir, gff3)
 	time_print("\tRunning command: %s"%cmd)
 	os.system(cmd)
 

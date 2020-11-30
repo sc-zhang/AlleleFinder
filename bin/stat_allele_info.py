@@ -3,7 +3,7 @@ import sys
 import re
 
 
-def stat_formated_allele(in_allele, in_hap_gff3, out_stat):
+def stat_formated_allele(in_allele, in_hap_gff3, out_pre):
 	print("Loading hap gff3")
 	hap_db = {}
 	with open(in_hap_gff3, 'r') as fin:
@@ -22,6 +22,7 @@ def stat_formated_allele(in_allele, in_hap_gff3, out_stat):
 	
 	print("Loading allele table")
 	allele_summary = {}
+	gene_cnt_summary = {}
 	with open(in_allele, 'r') as fin:
 		for line in fin:
 			data = line.strip().split('\t')
@@ -32,9 +33,11 @@ def stat_formated_allele(in_allele, in_hap_gff3, out_stat):
 			tand_cnt = 0
 			disp_cnt = 0
 			allele_cnt_list = [0 for i in range(0, allele_cnt)]
+			gene_cnt = 0
 			for i in range(3, len(data)):
 				if data[i] == 'NA':
 					continue
+				gene_cnt += 1
 				ids = data[i].split(',')
 				chrn_cnt_db = {}
 				allele_cnt_list[i-3] += 1
@@ -66,9 +69,13 @@ def stat_formated_allele(in_allele, in_hap_gff3, out_stat):
 			
 			allele_summary[max_chrn][1] += tand_cnt
 			allele_summary[max_chrn][2] += disp_cnt
+
+			if max_chrn not in gene_cnt_summary:
+				gene_cnt_summary[chrn] = [0 for i in range(0, allele_cnt)]
+			gene_cnt_summary[chrn][gene_cnt-1] += 1
 	
 	print("Writing summary")
-	with open(out_stat, 'w') as fout:
+	with open(out_pre+'.allele.stat', 'w') as fout:
 		allele_list = []
 		for i in range(0, allele_cnt):
 			allele_list.append("Allele %s"%chr(65+i))
@@ -86,12 +93,31 @@ def stat_formated_allele(in_allele, in_hap_gff3, out_stat):
 			sum_info[allele_cnt+2] += allele_summary[chrn][2]
 			fout.write("%s\n"%(','.join(map(str, info))))
 		fout.write("Total,%s\n"%(','.join(map(str, sum_info))))
+	
+	with open(out_pre+'.genes.stat', 'w') as fout:
+		gene_cnt_list = []
+		sum_info = [0 for i in range(0, allele_cnt+3)]
+		for i in range(allele_cnt, 0, -1):
+			gene_cnt_list.append('No. with %d'%i)
+		fout.write("#CHR,Total,%s,Tandem,Dispersely\n"%(','.join(gene_cnt_list)))
+		for chrn in sorted(gene_cnt_summary):
+			info = [chrn, sum(gene_cnt_summary[chrn])]
+			for i in range(allele_cnt, 0, -1):
+				info.append(gene_cnt_summary[chrn][i-1])
+			info.append(allele_summary[chrn][1])
+			info.append(allele_summary[chrn][2])
+			for i in range(0, len(sum_info)):
+				sum_info[i] += info[i+1]
+			fout.write("%s\n"%(','.join(map(str, info))))
+		fout.write("Total,%s\n"%(','.join(map(str, sum_info))))
+
+
 	print("Finished")
 
 
 if __name__ == "__main__":
 	if len(sys.argv) < 4:
-		print("Usage: python %s <in_allele> <in_hap_gff3> <out_stat>"%sys.argv[0])
+		print("Usage: python %s <in_allele> <in_hap_gff3> <out_pre>"%sys.argv[0])
 	else:
-		in_allele, in_hap_gff3, out_stat = sys.argv[1:]
-		stat_formated_allele(in_allele, in_hap_gff3, out_stat)
+		in_allele, in_hap_gff3, out_pre = sys.argv[1:]
+		stat_formated_allele(in_allele, in_hap_gff3, out_pre)

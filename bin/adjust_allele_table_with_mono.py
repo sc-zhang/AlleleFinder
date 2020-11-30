@@ -3,7 +3,7 @@ import sys
 import re
 
 
-def format_allel_table(in_allele, mono_gff3, hap_gff3, blast, iden, tandem, allele_num, out_allele):
+def adjust_allele_table(in_allele, mono_gff3, hap_gff3, blast, iden, tandem, allele_num, out_allele):
 	print("Loading blast")
 	blast_db = {}
 	with open(blast, 'r') as fin:
@@ -124,4 +124,4 @@ if __name__ == "__main__":
 		print("Usage: python %s <in_allele> <mono_gff3> <hap_gff3> <hap_mono_blast> <iden_threshold> <tandem_list> <allele_number> <out_allele>"%sys.argv[0])
 	else:
 		in_allele, mono_gff3, hap_gff3, blast, iden, tandem, allele_num, out_allele = sys.argv[1:]
-		format_allel_table(in_allele, mono_gff3, hap_gff3, blast, float(iden), tandem, int(allele_num), out_allele)
+		adjust_allele_table(in_allele, mono_gff3, hap_gff3, blast, float(iden), tandem, int(allele_num), out_allele)

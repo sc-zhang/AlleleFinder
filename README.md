@@ -57,6 +57,6 @@ AlleleFinder -m MONO -d MONO_CDS -f MONO_GFF3 -c CDS -n NUM_ALLELE -g GFF3 [-b B
 
 ## Results
 
-**allele.formated.txt** is the file contain all allele genes
+**allele.adjusted.txt** is the file contain all allele genes
 
-**allele.formated.stat** is the statistics information of allele
+**allele.adjusted.*.stat** is the statistics information of allele
