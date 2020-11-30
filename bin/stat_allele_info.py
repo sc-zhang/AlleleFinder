@@ -99,7 +99,7 @@ def stat_formated_allele(in_allele, in_hap_gff3, out_pre):
 		sum_info = [0 for i in range(0, allele_cnt+3)]
 		for i in range(allele_cnt, 0, -1):
 			gene_cnt_list.append('No. with %d'%i)
-		fout.write("#CHR,Total,%s,Tandem,Dispersely\n"%(','.join(gene_cnt_list)))
+		fout.write("#CHR,Total count of allele genes,%s,Tandem,Dispersely\n"%(','.join(gene_cnt_list)))
 		for chrn in sorted(gene_cnt_summary):
 			info = [chrn, sum(gene_cnt_summary[chrn])]
 			for i in range(allele_cnt, 0, -1):

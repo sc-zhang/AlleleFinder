@@ -21,13 +21,15 @@ def get_opts():
 	group.add_argument('-g', '--gff3', help="GFF3 file of polyploid", required=True)
 	group.add_argument('-n', '--num_allele', help="number of allele", type=int, required=True)
 	group.add_argument('-b', '--blast_count', help="blast count, default: 2", type=int, default=2)
-	group.add_argument('-i', '--blast_identity', help="blast identity threshold, default: 80", type=float, default=80)
+	group.add_argument('-i', '--blast_identity', help="threshold of blast identity, default: 80", type=float, default=80)
+	group.add_argument('-e', '--TE', help="TE gff3 for filtering, default: \"\"", default="")
+	group.add_argument('-j', '--TE_overlap', help="threshold of TE overlap, default: 0.3, only effect when TE is not NULL", type=float, default=0.3)
 	group.add_argument('-w', '--workdir', help="workdir, default: wrkdir", default="wrkdir")
 	group.add_argument('-t', '--threads', help="threads, default: 12", default=12, type=int)
 	return group.parse_args()
 
 
-def AlleleFinder(mono, mono_cds, mono_gff3, cds, gff3, na, blast_count, iden_thres, wrkdir, threads):
+def AlleleFinder(mono, mono_cds, mono_gff3, cds, gff3, na, blast_count, iden_thres, TE, TE_thres, wrkdir, threads):
 	if not os.path.exists(wrkdir):
 		os.mkdir(wrkdir)
 	
@@ -36,7 +38,9 @@ def AlleleFinder(mono, mono_cds, mono_gff3, cds, gff3, na, blast_count, iden_thr
 	mono_gff3 = os.path.abspath(mono_gff3)
 	cds = os.path.abspath(cds)
 	gff3 = os.path.abspath(gff3)
-
+	if TE != "":
+		TE = os.path.abspath(TE)
+	
 	script_dir = sys.path[0]
 	time_print("Entering: %s"%wrkdir)
 	os.chdir(wrkdir)
@@ -158,12 +162,30 @@ def AlleleFinder(mono, mono_cds, mono_gff3, cds, gff3, na, blast_count, iden_thr
 	time_print("Leaving: 04.mono_adjust")
 	os.chdir("..")
 	
-	cmd = "python %s/adjust_allele_table_with_mono.py allele.csv %s %s %s %f %s %d allele.adjusted.txt &> /dev/null"%(script_dir, mono_gff3, gff3, out_blast, iden_thres, tandem_file, na)
-	time_print("\tRunning command: %s"%cmd)
-	os.system(cmd)
-
-	time_print("Step7: Statistics")
-	cmd = "python %s/stat_allele_info.py allele.adjusted.txt %s allele.adjusted &> /dev/null"%(script_dir, gff3)
+	allele_file = "allele.adjusted.txt"
+	if not os.path.exists(allele_file):
+		cmd = "python %s/adjust_allele_table_with_mono.py allele.csv %s %s %s %f %s %d allele.adjusted.txt &> /dev/null"%(script_dir, mono_gff3, gff3, out_blast, iden_thres, tandem_file, na)
+		time_print("\tRunning command: %s"%cmd)
+		os.system(cmd)
+	else:
+		time_print("\tallele.adjusted.txt found, skip")
+	
+	
+	step_idx = 7
+	if TE != "":
+		time_print("Step7: Filtering with TEs")
+		allele_file = "allele.adjusted.nonTEs.txt"
+		if not os.path.exists(allele_file):
+			cmd = "python %s/filter_with_TE.py allele.adjusted.txt %s %s %f allele.adjusted.nonTEs.txt &> /dev/null"%(script_dir, gff3, TE, TE_thres)
+			time_print("\tRunning command: %s"%cmd)
+			os.system(cmd)
+			step_idx += 1
+		else:
+			time_print("\tallele.adjusted.nonTEs.txt found, skip")
+	
+	time_print("Step%d: Statistics"%step_idx)
+	stat_pre = '.'.join(allele_file.split('.')[:-1])
+	cmd = "python %s/stat_allele_info.py %s %s %s &> /dev/null"%(script_dir, allele_file, gff3, stat_pre)
 	time_print("\tRunning command: %s"%cmd)
 	os.system(cmd)
 
@@ -180,6 +202,8 @@ if __name__ == "__main__":
 	na = opts.num_allele
 	blast_count = opts.blast_count
 	iden_thres = opts.blast_identity
+	TE = opts.TE
+	TE_thres = opts.TE_overlap
 	wrkdir = opts.workdir
 	threads = opts.threads
-	AlleleFinder(mono, mono_cds, mono_gff3, cds, gff3, na, blast_count, iden_thres, wrkdir, threads)
+	AlleleFinder(mono, mono_cds, mono_gff3, cds, gff3, na, blast_count, iden_thres, TE, TE_thres, wrkdir, threads)
