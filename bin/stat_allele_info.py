@@ -71,8 +71,8 @@ def stat_formated_allele(in_allele, in_hap_gff3, out_pre):
 			allele_summary[max_chrn][2] += disp_cnt
 
 			if max_chrn not in gene_cnt_summary:
-				gene_cnt_summary[chrn] = [0 for i in range(0, allele_cnt)]
-			gene_cnt_summary[chrn][gene_cnt-1] += 1
+				gene_cnt_summary[max_chrn] = [0 for i in range(0, allele_cnt)]
+			gene_cnt_summary[max_chrn][gene_cnt-1] += 1
 	
 	print("Writing summary")
 	with open(out_pre+'.allele.stat', 'w') as fout:
