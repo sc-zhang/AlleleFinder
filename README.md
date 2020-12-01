@@ -33,6 +33,8 @@ source ~/.bash_profile
 AlleleFinder [-h] -m MONO -d MONO_CDS -f MONO_GFF3 -c CDS -g GFF3 -n NUM_ALLELE [-b BLAST_COUNT] [-i BLAST_IDENTITY] [-e TE] [-j TE_OVERLAP] [-w WORKDIR] [-t THREADS]
 ```
 
+**Notice** there must no '-' in gene id
+
 **-m, --mono** fasta file of mono genome
 
 **-d, --mono_cds** cds file of mono genome
