@@ -14,12 +14,13 @@ def time_print(info):
 
 def get_opts():
 	group = argparse.ArgumentParser()
-	group.add_argument('-m', '--mono', help="reference mono fasta", required=True)
-	group.add_argument('-d', '--mono_cds', help="CDS fasta of mono", required=True)
-	group.add_argument('-f', '--mono_gff3', help="GFF3 file of mono", required=True)
+	group.add_argument('-r', '--ref', help="reference fasta", required=True)
+	group.add_argument('-d', '--ref_cds', help="CDS fasta of ref", required=True)
+	group.add_argument('-f', '--ref_gff3', help="GFF3 file of ref", required=True)
 	group.add_argument('-c', '--cds', help="CDS fasta of polyploid", required=True)
 	group.add_argument('-g', '--gff3', help="GFF3 file of polyploid", required=True)
 	group.add_argument('-n', '--num_allele', help="number of allele", type=int, required=True)
+	group.add_argument('-m', '--is_mono', help="If your reference fasta is mono assembly of polyploid, add this argument", action="store_true")
 	group.add_argument('-b', '--blast_count', help="blast count, default: 2", type=int, default=2)
 	group.add_argument('-i', '--blast_identity', help="threshold of blast identity, default: 80", type=float, default=80)
 	group.add_argument('-e', '--TE', help="TE gff3 for filtering, default: \"\"", default="")
@@ -29,13 +30,13 @@ def get_opts():
 	return group.parse_args()
 
 
-def AlleleFinder(mono, mono_cds, mono_gff3, cds, gff3, na, blast_count, iden_thres, TE, TE_thres, wrkdir, threads):
+def AlleleFinder(ref, ref_cds, ref_gff3, cds, gff3, na, is_mono, blast_count, iden_thres, TE, TE_thres, wrkdir, threads):
 	if not os.path.exists(wrkdir):
 		os.mkdir(wrkdir)
 	
-	mono = os.path.abspath(mono)
-	mono_cds = os.path.abspath(mono_cds)
-	mono_gff3 = os.path.abspath(mono_gff3)
+	ref = os.path.abspath(ref)
+	ref_cds = os.path.abspath(ref_cds)
+	ref_gff3 = os.path.abspath(ref_gff3)
 	cds = os.path.abspath(cds)
 	gff3 = os.path.abspath(gff3)
 	if TE != "":
@@ -59,7 +60,7 @@ def AlleleFinder(mono, mono_cds, mono_gff3, cds, gff3, na, blast_count, iden_thr
 	time_print("Step2: running gmap")
 	gmap_res = "02.gmap/gmap.gff3"
 	if not os.path.exists(gmap_res):
-		cmd = "python %s/run_gmap.py %s %s %d 02.gmap %d &> /dev/null"%(script_dir, mono, cds, na, threads)
+		cmd = "python %s/run_gmap.py %s %s %d 02.gmap %d &> /dev/null"%(script_dir, ref, cds, na, threads)
 		time_print("\tRunning: %s"%cmd)
 		os.system(cmd)
 	else:
@@ -139,18 +140,18 @@ def AlleleFinder(mono, mono_cds, mono_gff3, cds, gff3, na, blast_count, iden_thr
 		for allele in sorted(final_allele):
 			fout.write("%s\n"%(",".join(sorted(allele))))
 	
-	time_print("Step6: Adjusting with mono annotation")
-	if not(os.path.exists("04.mono_adjust")):
-		os.mkdir("04.mono_adjust")
+	time_print("Step6: Adjusting with ref annotation")
+	if not(os.path.exists("04.ref_adjust")):
+		os.mkdir("04.ref_adjust")
 
-	time_print("\tEntering: 04.mono_adjust")
-	os.chdir("04.mono_adjust")
+	time_print("\tEntering: 04.ref_adjust")
+	os.chdir("04.ref_adjust")
 
-	mono_fn = mono_cds.split('/')[-1].split('.')[0]
+	ref_fn = ref_cds.split('/')[-1].split('.')[0]
 	hap_fn = cds.split('/')[-1].split('.')[0]
-	out_blast = hap_fn+'.vs.'+mono_fn+'.blast'
+	out_blast = hap_fn+'.vs.'+ref_fn+'.blast'
 	if not os.path.exists(out_blast):
-		cmd1 = "makeblastdb -in %s -dbtype nucl -out blastdb &> /dev/null"%(mono_cds)
+		cmd1 = "makeblastdb -in %s -dbtype nucl -out blastdb &> /dev/null"%(ref_cds)
 		cmd2 = "blastn -query %s -db blastdb -out %s -evalue 1e-3 -outfmt 6 -num_alignments 1 -num_threads %d &> /dev/null"%(cds, out_blast, threads)
 		time_print("\tRunning command: %s"%cmd1)
 		os.system(cmd1)
@@ -160,12 +161,15 @@ def AlleleFinder(mono, mono_cds, mono_gff3, cds, gff3, na, blast_count, iden_thr
 		time_print("\tBlast file found, skip")
 	out_blast = os.path.abspath(out_blast)
 
-	time_print("Leaving: 04.mono_adjust")
+	time_print("Leaving: 04.ref_adjust")
 	os.chdir("..")
 	
 	allele_file = "allele.adjusted.txt"
 	if not os.path.exists(allele_file):
-		cmd = "python %s/adjust_allele_table_with_mono.py allele.csv %s %s %s %s %f %s %d allele.adjusted.txt &> /dev/null"%(script_dir, mono_gff3, gff3, out_blast, hap_blast_file, iden_thres, tandem_file, na)
+		if is_mono:
+			cmd = "python %s/adjust_allele_table_with_ref.py allele.csv %s %s %s %s %f %s %d allele.adjusted.txt T &> /dev/null"%(script_dir, ref_gff3, gff3, out_blast, hap_blast_file, iden_thres, tandem_file, na)
+		else:
+			cmd = "python %s/adjust_allele_table_with_ref.py allele.csv %s %s %s %s %f %s %d allele.adjusted.txt F &> /dev/null"%(script_dir, ref_gff3, gff3, out_blast, hap_blast_file, iden_thres, tandem_file, na)
 		time_print("\tRunning command: %s"%cmd)
 		os.system(cmd)
 	else:
@@ -195,11 +199,15 @@ def AlleleFinder(mono, mono_cds, mono_gff3, cds, gff3, na, blast_count, iden_thr
 
 if __name__ == "__main__":
 	opts = get_opts()
-	mono = opts.mono
-	mono_cds = opts.mono_cds
-	mono_gff3 = opts.mono_gff3
+	ref = opts.ref
+	ref_cds = opts.ref_cds
+	ref_gff3 = opts.ref_gff3
 	cds = opts.cds
 	gff3 = opts.gff3
+	if opts.is_mono:
+		is_mono = True
+	else:
+		is_mono = False
 	na = opts.num_allele
 	blast_count = opts.blast_count
 	iden_thres = opts.blast_identity
@@ -207,4 +215,4 @@ if __name__ == "__main__":
 	TE_thres = opts.TE_overlap
 	wrkdir = opts.workdir
 	threads = opts.threads
-	AlleleFinder(mono, mono_cds, mono_gff3, cds, gff3, na, blast_count, iden_thres, TE, TE_thres, wrkdir, threads)
+	AlleleFinder(ref, ref_cds, ref_gff3, cds, gff3, na, is_mono, blast_count, iden_thres, TE, TE_thres, wrkdir, threads)

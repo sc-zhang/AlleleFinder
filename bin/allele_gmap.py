@@ -11,9 +11,10 @@ def read_gff3(in_gff3):
 			if line.strip() == '' or line[0] == '#':
 				continue
 			data = line.strip().split()
-			chrn = re.findall(r'([A-Za-z]+\d+).*', data[0])[0]
-			if 'ctg' in chrn or 'tig' in chrn:
+			if 'ctg' in data[0] or 'tig' in data[0] or 'utg' in data[0] or 'scaffold' in data[0] or 'super' in data[0]:
 				continue
+			chrn = re.findall(r'([A-Za-z]+\d+).*', data[0])[0]
+			
 			type = data[2]
 			if type != 'gene':
 				continue
