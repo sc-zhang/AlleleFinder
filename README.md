@@ -30,22 +30,24 @@ source ~/.bash_profile
 ## Usage
 
 ```bash
-AlleleFinder [-h] -m MONO -d MONO_CDS -f MONO_GFF3 -c CDS -g GFF3 -n NUM_ALLELE [-b BLAST_COUNT] [-i BLAST_IDENTITY] [-e TE] [-j TE_OVERLAP] [-w WORKDIR] [-t THREADS]
+AlleleFinder [-h] -r REF -d REF_CDS -f REF_GFF3 -c CDS -g GFF3 -n NUM_ALLELE [-b BLAST_COUNT] [-i BLAST_IDENTITY] [-e TE] [-j TE_OVERLAP] [-w WORKDIR] [-t THREADS] [-m|--is_mono]
 ```
 
 **Notice** there must no '-' in gene id
 
-**-m, --mono** fasta file of mono genome
+**-r, --ref** fasta file of ref genome
 
-**-d, --mono_cds** cds file of mono genome
+**-d, --ref_cds** cds file of ref genome
 
-**-f, --mono_gff3** gff3 file of mono genome
+**-f, --ref_gff3** gff3 file of ref genome
 
 **-c, --cds** cds file of polyploid genome
 
 **-g, --gff3** gff3 file of polyploid  genome
 
 **-n, --num_allele** number of allele
+
+**-m, --is_mono** if ref genome is mono assembly of polyploid genome, add this parameter
 
 **-b, --blast_count** iteration count for running blast, default: 2
 
