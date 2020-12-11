@@ -77,12 +77,11 @@ def adjust_allele_table(in_allele, ref_gff3, hap_gff3, ref_blast, hap_blast, ide
 	print("Formatting allele table")
 	full_allele = []
 	info_db = {}
-	ref_cnt = {}
+	line_cnt = 0
 	with open(in_allele, 'r') as fin:
 		for line in fin:
 			data = line.strip().split(',')
-			ref_gn_cnt = {}
-			tmp_list = [[] for i in range(0, allele_num)]
+			line_cnt += 1
 			for id in data:
 				hchrn, hpos = hap_db[id]
 				hidx = ord(hchrn[-1])-65
@@ -97,28 +96,16 @@ def adjust_allele_table(in_allele, ref_gff3, hap_gff3, ref_blast, hap_blast, ide
 				ref_gn = ref_blast_db[ref_id][0]
 				if ref_gn not in ref_db:
 					continue
-				if ref_gn not in ref_gn_cnt:
-					ref_gn_cnt[ref_gn] = 0
-				ref_gn_cnt[ref_gn] += 1
 				if is_mono.upper() == 'T':
 					if ref_gn not in info_db:
 						info_db[ref_gn] = [[] for i in range(0, allele_num)]
 					info_db[ref_gn][hidx].append([hpos, id])
 				else:
-					tmp_list[hidx].append([hpos, id])
-			if is_mono.upper() == 'F':
-				max_gn = ""
-				max_cnt = 0
-				for ref_gn in ref_gn_cnt:
-					if ref_gn_cnt[ref_gn] > max_cnt:
-						max_cnt = ref_gn_cnt[ref_gn]
-						max_gn = ref_gn
-				if max_gn not in ref_cnt:
-					ref_cnt[max_gn] = 0
-				ref_cnt[max_gn] += 1
-				new_gn = "%s:::%d"%(max_gn, ref_cnt[max_gn])
-				info_db[new_gn] = tmp_list
-		
+					tmp_gn = "%s:::%d"%(ref_gn, line_cnt)
+					if tmp_gn not in info_db:
+						info_db[tmp_gn] = [[] for i in range(0, allele_num)]
+					info_db[tmp_gn][hidx].append([hpos, id])
+			
 		for ref_gn in info_db:
 			tmp_list = []
 			null_cnt = 0
