@@ -7,6 +7,7 @@ def get_opts():
     group.add_argument('-i', '--input', help="Input allele table", required=True)
     group.add_argument('-m', '--min_num', help="Minium number of genes, which means the number of genes marked as paralog that distribute in different allele should be pulled down as new allele genes", type=int, required=True)
     group.add_argument('-o', '--output', help="Output allele table", required=True)
+    return group.parse_args()
 
 
 def pull_down_paralog(in_allele, min_num, out_allele):
