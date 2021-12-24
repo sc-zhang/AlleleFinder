@@ -76,3 +76,13 @@ AlleleFinder [-h] -r REF -d REF_CDS -f REF_GFF3 -c CDS -g GFF3 -n NUM_ALLELE [-b
 **allele.adjusted.nonTEs.txt** is the file contain all allele genes
 
 **allele.adjusted.nonTEs.*.stat** are the statistics information of allele
+
+
+## Additional
+If the paralog gene is too much, you can use pull_down_paralog.py to pull them down as new alleles
+```bash
+pull_down_paralog.py -i <origin_allele_table> -m <min_num> -o <new_allele_table>
+```
+**-m, --min_num** means if the count of genes which are marked as paralog genes distribute in different alleles greater than this parameter, these paralog genes should be allele genes, and they will be pulled down as new alleles.
+
+**Notice** because we only pull down the first paralog genes from each allele to contruct new allele, that means if there are more than one paralog genes in different alleles, you may need run this script more than one time to pull all paralog genes which with the distribution mentioned before down as new alleles.
