@@ -42,8 +42,11 @@ def stat_formated_allele(in_allele, in_hap_gff3, out_pre):
 				chrn_cnt_db = {}
 				allele_cnt_list[i-3] += 1
 				for id in ids:
-					if '-' in id:
-						id, type = id.split('-')
+					if '-' in id and id.split('-')[-1] in {"T", "P"}:
+						tmp = id.split('-')
+						type = tmp[-1]
+						id = '-'.join(tmp[:-1])
+						#id, type = id.split('-')
 						if type == 'T':
 							tand_cnt += 1
 						else:
