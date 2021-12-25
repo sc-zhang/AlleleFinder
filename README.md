@@ -79,7 +79,7 @@ AlleleFinder [-h] -r REF -d REF_CDS -f REF_GFF3 -c CDS -g GFF3 -n NUM_ALLELE [-b
 
 
 ## Additional
-If the paralog genes are too many, you can use pull_down_paralog.py to pull them down as new alleles
+If there are too many genes be marked with paralog, you can use pull_down_paralog.py to pull them down as new alleles
 ```bash
 pull_down_paralog.py -i <origin_allele_table> -m <min_num> -o <new_allele_table>
 ```
