@@ -1,3 +1,6 @@
+## State
+2023/02/09  Developing
+
 ## Introduction
 
 This software is used for identifying allele genes from polyploid genome.
