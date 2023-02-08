@@ -77,9 +77,11 @@ def run_MCScanX(in_fa, in_gff3, out_dir, threads):
 		print("GFF file found, skip")
 	
 	cmd = "MCScanX xyz/xyz &> /dev/null"
+	cmd_class = "duplicate_gene_classifier xyz/xyz"
 	print("Running command: %s"%cmd)
 	os.system(cmd)
-
+	print("Running command: %s"%cmd_class)
+	os.system(cmd_class)
 	print("Finished")	
 
 
