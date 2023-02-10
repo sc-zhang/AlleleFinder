@@ -3,9 +3,17 @@ import sys
 import os
 import argparse
 import time
+import dup_pipe as dp
 import allele_backbone as ab
 import allele_gmap as ag
 import allele_blast as abl
+
+#### workflow ####
+## 0. 目的：目前的方法鉴定到的假阳性等位和paralog有点多，所以需要去掉一些。
+## 1. 首先鉴定重复分类，将其分为tandem (TD)/Dispersed (DPD)/Proximal (PD) 等, DPD和PD和都归为-P, TD为-T
+## 2. 构建等位表的主体方法不变，但在构建等位表时去掉这三种重复的基因
+## 3. 因为去掉了三类重复基因，所以每个同源染色体上的基因座理论上只有一个基因，pull down 多余的那个形成新的等位基因。
+## 4. 将三类重复加进等位表中。
 
 
 def time_print(info):
@@ -48,6 +56,8 @@ def AlleleFinder(ref, ref_cds, ref_gff3, cds, gff3, na, is_mono, blast_count, id
 
 	time_print("Step1: running MCScanX")
 	mcs_dir = "01.mcscanx/xyz/xyz.html"
+	parent_dir = os.path.abspath(mcs_dir).replace("xyz.html", "")
+	dup_dir = parent_dir + "output_directory"
 	tandem_file = os.path.abspath("01.mcscanx/xyz/xyz.tandem")
 	hap_blast_file = os.path.abspath("01.mcscanx/xyz/xyz.blast")
 	if not os.path.exists(mcs_dir):
@@ -56,6 +66,14 @@ def AlleleFinder(ref, ref_cds, ref_gff3, cds, gff3, na, is_mono, blast_count, id
 		os.system(cmd)
 	else:
 		time_print("\tMCScanX result found, skip")
+	if not os.path.exists(dup_dir):
+		cmd = "DupGen_finder-unique.pl -i %s -t xyz -c xyz -o %s &> /dev/null"%(parent_dir, dup_dir)
+		time_print("\tRunning: %s"%cmd)
+		os.system(cmd)
+	else:
+		time_print("\tDupGen_finder result found, skip")
+	
+	
 	
 	time_print("Step2: running gmap")
 	gmap_res = "02.gmap/gmap.gff3"
@@ -65,17 +83,27 @@ def AlleleFinder(ref, ref_cds, ref_gff3, cds, gff3, na, is_mono, blast_count, id
 		os.system(cmd)
 	else:
 		time_print("\tGmap result found, skip")
+	##############################################################
+	
+	
 	
 	time_print("Step3: Generating first allele table")
 	if not os.path.exists("backbone.csv"):
 		time_print("\tLoading MCScanX results")
 		base_allele = []
+		# laod synteny block by chromosome.
+		# Load duplication infomation
+		pDic, pLst, tDic, tLst = dp.merge_dup_class(dup_dir)
+		#### EDIT HERE #### 
+		
+		
 		for fn in os.listdir(mcs_dir):
 			full_fn = os.path.join(mcs_dir, fn)
 			tmp_allele = ab.get_allele_with_mcscanx(full_fn)
 			base_allele.extend(tmp_allele)
 		
 		time_print("\tLoading GMAP result")
+		# load gmap annotation results.
 		gff3_db, gene_order = ag.read_gff3(gmap_res)
 		gff3_allele = ag.allele_gmap(gff3_db, threads)
 		base_allele.extend(gff3_allele)
@@ -106,6 +134,8 @@ def AlleleFinder(ref, ref_cds, ref_gff3, cds, gff3, na, is_mono, blast_count, id
 	for i in range(0, blast_count):
 		time_print("\tStarting iteration %02d"%(i+1))
 		outpre = "iter%02d"%(i+1)
+		## single_fa are genes only with one allele.
+		## multi_fa are genes with multi allleles.
 		single_fa = outpre+"_single.fa"
 		multi_fa = outpre+"_multi.fa"
 		out_blast = outpre+".blast"
