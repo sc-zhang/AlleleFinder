@@ -106,12 +106,14 @@ def AlleleFinder(ref, ref_cds, ref_gff3, cds, gff3, na, is_mono, blast_count, id
 		# load gmap annotation results.
 		gff3_db, gene_order = ag.read_gff3(gmap_res)
 		gff3_allele = ag.allele_gmap(gff3_db, threads)
-		base_allele.extend(gff3_allele)
+		base_allele.extend(gff3_allele) # 读取gmap注释结果; type: list
 
 		time_print("\tWriting allele list backbone")
 		gff3_db, gene_order = ag.read_gff3(gff3)
-		base_allele = ab.split_allele(base_allele, gene_order)
-		base_allele = ab.merge_allele(base_allele)
+		base_allele = ab.split_allele(base_allele, gene_order)  # 将同一个等位上的基因，按照染色体进行拆分 ;原先： [['A','b', 'c']] -> [['A'], ['b', 'c']]
+		base_allele = ab.merge_allele(base_allele) # 没搞懂这个函数是干啥的； 输出的也是List
+    ### remove paralog gene
+		base_allele = dp.remove_repeat_allele(base_allele, pLst, tLst)
 		with open("backbone.csv", 'w') as fout:
 			for allele in sorted(base_allele):
 				fout.write("%s\n"%(",".join(sorted(allele))))
@@ -121,10 +123,9 @@ def AlleleFinder(ref, ref_cds, ref_gff3, cds, gff3, na, is_mono, blast_count, id
 		with open("backbone.csv", 'r') as fin:
 			for line in fin:
 				base_allele.append(line.strip().split(','))
-	
 	backbone = os.path.abspath("backbone.csv")
 	final_allele = base_allele
-
+#### 这一步是将单个等位的基因重新比对到多个等位的基因上，如果有相似的就拉进去，避免太多单等位基因的存在。
 	time_print("Step4: running blast")
 	if not os.path.exists("03.blast"):
 		os.mkdir("03.blast")
@@ -197,15 +198,13 @@ def AlleleFinder(ref, ref_cds, ref_gff3, cds, gff3, na, is_mono, blast_count, id
 	allele_file = "allele.adjusted.txt"
 	if not os.path.exists(allele_file):
 		if is_mono:
-			cmd = "python %s/adjust_allele_table_with_ref.py allele.csv %s %s %s %s %f %s %d allele.adjusted.txt T &> /dev/null"%(script_dir, ref_gff3, gff3, out_blast, hap_blast_file, iden_thres, tandem_file, na)
+			cmd = "python %s/adjust_allele_table_with_ref.py allele.csv %s %s %s %s %f %s %d %s %s allele.adjusted.txt T &> /dev/null"%(script_dir, ref_gff3, gff3, out_blast, hap_blast_file, iden_thres, tandem_file, na, pDic, tDic)
 		else:
-			cmd = "python %s/adjust_allele_table_with_ref.py allele.csv %s %s %s %s %f %s %d allele.adjusted.txt F &> /dev/null"%(script_dir, ref_gff3, gff3, out_blast, hap_blast_file, iden_thres, tandem_file, na)
+			cmd = "python %s/adjust_allele_table_with_ref.py allele.csv %s %s %s %s %f %s %d %s %s allele.adjusted.txt F &> /dev/null"%(script_dir, ref_gff3, gff3, out_blast, hap_blast_file, iden_thres, tandem_file, na, pDic, tDic)
 		time_print("\tRunning command: %s"%cmd)
 		os.system(cmd)
 	else:
 		time_print("\tallele.adjusted.txt found, skip")
-	
-	
 	step_idx = 7
 	if TE != "":
 		time_print("Step7: Filtering with TEs")
@@ -223,7 +222,6 @@ def AlleleFinder(ref, ref_cds, ref_gff3, cds, gff3, na, is_mono, blast_count, id
 	cmd = "python %s/stat_allele_info.py %s %s %s &> /dev/null"%(script_dir, allele_file, gff3, stat_pre)
 	time_print("\tRunning command: %s"%cmd)
 	os.system(cmd)
-
 	time_print("Finished")
 
 
