@@ -95,8 +95,11 @@ def AlleleFinder(ref, ref_cds, ref_gff3, cds, gff3, na, is_mono, blast_count, id
 		# Load duplication infomation
 		pDic, pLst, tDic, tLst = dp.merge_dup_class(dup_dir)
 		#### EDIT HERE #### 
-		
-		
+		pPath = dup_dir + '/paralog.txt'
+		tPath = dup_dir + '/tandem.txt'
+		dp.write_repeat_file(pDic, pPath)
+		dp.write_repeat_file(tDic, tPath)
+
 		for fn in os.listdir(mcs_dir):
 			full_fn = os.path.join(mcs_dir, fn)
 			tmp_allele = ab.get_allele_with_mcscanx(full_fn)
@@ -198,9 +201,9 @@ def AlleleFinder(ref, ref_cds, ref_gff3, cds, gff3, na, is_mono, blast_count, id
 	allele_file = "allele.adjusted.txt"
 	if not os.path.exists(allele_file):
 		if is_mono:
-			cmd = "python %s/adjust_allele_table_with_ref.py allele.csv %s %s %s %s %f %s %d %s %s allele.adjusted.txt T &> /dev/null"%(script_dir, ref_gff3, gff3, out_blast, hap_blast_file, iden_thres, tandem_file, na, pDic, tDic)
+			cmd = "python %s/adjust_allele_table_with_ref.py allele.csv %s %s %s %s %f %s %d %s %s allele.adjusted.txt T &> /dev/null"%(script_dir, ref_gff3, gff3, out_blast, hap_blast_file, iden_thres, tandem_file, na, pPath, tPath)
 		else:
-			cmd = "python %s/adjust_allele_table_with_ref.py allele.csv %s %s %s %s %f %s %d %s %s allele.adjusted.txt F &> /dev/null"%(script_dir, ref_gff3, gff3, out_blast, hap_blast_file, iden_thres, tandem_file, na, pDic, tDic)
+			cmd = "python %s/adjust_allele_table_with_ref.py allele.csv %s %s %s %s %f %s %d %s %s allele.adjusted.txt F &> /dev/null"%(script_dir, ref_gff3, gff3, out_blast, hap_blast_file, iden_thres, tandem_file, na, pPath, tPath)
 		time_print("\tRunning command: %s"%cmd)
 		os.system(cmd)
 	else:
