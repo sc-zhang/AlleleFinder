@@ -57,6 +57,8 @@ options:
                         threads, default: 12
 ```
 
+**Notice** the name of Chromosomes should be like: Chr01X, "X" means consecutive uppercase letters from A to Z, means 
+different alleles, for example, if there are 4 alleles, the names should be: Chr01A,Chr01B,Chr01C,Chr01D  
 **Notice** there must no '-' in gene id
 
 
