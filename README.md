@@ -59,7 +59,7 @@ options:
 
 **Notice:** the name of Chromosomes should be like: Chr01X, "X" means consecutive uppercase letters from A to Z, means 
 different alleles, for example, if there are 4 alleles, the names should be: Chr01A,Chr01B,Chr01C,Chr01D  
-
+**Notice:** the gff3 files must contain "gene" records, or you can use "sed" command to change "mRNA" to "gene" for some downloaded gff3 files.  
 **Notice:** there must no '-' in gene id
 
 
@@ -81,8 +81,15 @@ different alleles, for example, if there are 4 alleles, the names should be: Chr
 ## Additional
 If there are too many genes be marked with paralog, you can use pull_down_paralog.py to pull them down as new alleles
 ```bash
-pull_down_paralog.py -i <origin_allele_table> -m <min_num> -o <new_allele_table>
-```
-**-m, --min_num** means if the count of genes which are marked as paralog genes distribute in different alleles greater than this parameter, these paralog genes should be allele genes, and they will be pulled down as new alleles.
+usage: pull_down_paralog.py [-h] -i INPUT -m MIN_NUM -o OUTPUT
 
+options:
+  -h, --help            show this help message and exit
+  -i INPUT, --input INPUT
+                        Input allele table
+  -m MIN_NUM, --min_num MIN_NUM
+                        Minium number of genes, which means the number of genes marked as paralog that distribute in different allele should be pulled down as new allele genes
+  -o OUTPUT, --output OUTPUT
+                        Output allele table
+```
 **Notice** because we only pull down the first paralog genes from each allele to contruct new allele, that means if there are more than one paralog genes in different alleles, you may need run this script more than one time to pull all paralog genes which with the distribution mentioned before down as new alleles.
