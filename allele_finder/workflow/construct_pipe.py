@@ -46,7 +46,7 @@ def pipeline(ref, ref_cds, ref_gff3, cds, gff3, allele_count, is_mono, blast_cou
     hap_blast_file = path.abspath("01.mcscanx/xyz/xyz.blast")
     if not path.exists(mcs_dir):
         mcscanxer = MCScanXRunner()
-        mcscanxer.mcscanx(cds, gff3, mcs_dir, threads)
+        mcscanxer.mcscanx(cds, gff3, "01.mcscanx", threads)
     else:
         Message.info("\tMCScanX result found, skipping...")
 
