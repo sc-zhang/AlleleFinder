@@ -2,30 +2,24 @@
 
 This software is used for identifying allele genes from polyploid genome.
 
-
-
 ## Dependencies
 
 Software:
 
 &ensp;&ensp;&ensp;&ensp;MCScanX  
 &ensp;&ensp;&ensp;&ensp;GMAP  
-&ensp;&ensp;&ensp;&ensp;NCBI BLAST+  
-
-
+&ensp;&ensp;&ensp;&ensp;NCBI BLAST+
 
 ## Installation
 
 ```bash
 cd /path/to/install
 git clone https://github.com/sc-zhang/AlleleFinder.git
-chmod +x AlleleFinder/bin/AlleleFinder
+chmod +x AlleleFinder/allele_finder/AlleleFinder
 # Optional
-echo 'export PATH=/path/to/install/AlleleFinder/bin:$PATH' >> ~/.bash_profile
+echo 'export PATH=/path/to/install/AlleleFinder/allele_finder:$PATH' >> ~/.bash_profile
 source ~/.bash_profile
 ```
-
-
 
 ## Usage
 
@@ -57,11 +51,11 @@ options:
                         threads, default: 12
 ```
 
-**Notice:** the name of Chromosomes should be like: Chr01X, "X" means consecutive uppercase letters from A to Z, means 
+**Notice:** the name of Chromosomes should be like: Chr01X, "X" means consecutive uppercase letters from A to Z, means
 different alleles, for example, if there are 4 alleles, the names should be: Chr01A,Chr01B,Chr01C,Chr01D  
-**Notice:** the gff3 files must contain "gene" records, or you can use "sed" command to change "mRNA" to "gene" for some downloaded gff3 files.  
+**Notice:** the gff3 files must contain "gene" records, or you can use "sed" command to change "mRNA" to "gene" for some
+downloaded gff3 files.  
 **Notice:** there must no '-' in gene id
-
 
 ## Results
 
@@ -77,9 +71,10 @@ different alleles, for example, if there are 4 alleles, the names should be: Chr
 
 **allele.adjusted.nonTEs.*.stat** are the statistics information of allele
 
-
 ## Additional
+
 If there are too many genes be marked with paralog, you can use pull_down_paralog.py to pull them down as new alleles
+
 ```bash
 usage: pull_down_paralog.py [-h] -i INPUT -m MIN_NUM -o OUTPUT
 
@@ -92,4 +87,7 @@ options:
   -o OUTPUT, --output OUTPUT
                         Output allele table
 ```
-**Notice** because we only pull down the first paralog genes from each allele to contruct new allele, that means if there are more than one paralog genes in different alleles, you may need run this script more than one time to pull all paralog genes which with the distribution mentioned before down as new alleles.
+
+**Notice** because we only pull down the first paralog genes from each allele to contruct new allele, that means if
+there are more than one paralog genes in different alleles, you may need run this script more than one time to pull all
+paralog genes which with the distribution mentioned before down as new alleles.
