@@ -109,7 +109,7 @@ def pipeline(ref, ref_cds, ref_gff3, cds, gff3, allele_count, is_mono, blast_cou
             Message.info("\tIter %02d, Fasta file found, skipping..." % (i + 1))
         if not path.exists(out_blast):
             blaster = BlastRunner()
-            blaster.blast(multi_fa, single_fa, outpre + "db", "1e-3", out_blast, threads)
+            blaster.blast(multi_fa, single_fa, outpre + "db", "1e-3", out_blast, 1, threads)
         else:
             Message.info("\tIter %02d, blast file found, skipping..." % (i + 1))
         final_allele.extend(BlastUtils.allele_blast(out_blast, iden_thres))
