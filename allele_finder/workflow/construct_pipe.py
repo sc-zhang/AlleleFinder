@@ -106,12 +106,12 @@ def pipeline(ref, ref_cds, ref_gff3, cds, gff3, allele_count, is_mono, blast_cou
         if not (path.exists(single_fa) and path.exists(multi_fa)):
             FastaUtils.split_fasta_with_allele(cds, backbone, outpre)
         else:
-            Message.info("\tIter %02d, Fasta file found, skip" % (i + 1))
+            Message.info("\tIter %02d, Fasta file found, skipping..." % (i + 1))
         if not path.exists(out_blast):
             blaster = BlastRunner()
-            blaster.blast(multi_fa, single_fa, out_blast, threads)
+            blaster.blast(multi_fa, single_fa, outpre + "db", out_blast, threads)
         else:
-            Message.info("\tIter %02d, blast file found, skip" % (i + 1))
+            Message.info("\tIter %02d, blast file found, skipping..." % (i + 1))
         final_allele.extend(BlastUtils.allele_blast(out_blast, iden_thres))
         final_allele = AlleleUtils.merge_allele(final_allele)
         backbone = outpre + ".csv"

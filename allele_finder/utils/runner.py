@@ -69,19 +69,19 @@ class GmapRunner(Runner):
 
 
 class BlastRunner(Runner):
-    def blast(self, ref_fasta, qry_fasta, out_blast, threads):
+    def blast(self, ref_fasta, qry_fasta, db_name, out_blast, threads):
         if not path.exists(out_blast):
             Message.info("\tRunning blast")
             fa_type = FastaUtils.check_fasta_type(ref_fasta)
-            self._cmd = "makeblastdb -in %s -dbtype %s -out blastdb" % (ref_fasta, fa_type)
+            self._cmd = "makeblastdb -in %s -dbtype %s -out %s" % (ref_fasta, fa_type, db_name)
             Message.info("\tRunning command: %s" % self._cmd)
             self.run()
             with open("makeblastdb.log", 'a') as fout:
                 fout.write("%s\n" % self._res)
                 fout.write("%s\n" % self._err)
 
-            self._cmd = ("blastn -query %s -db blastdb -out %s -evalue 1e-10 -outfmt 6 -num_alignments 5 "
-                         "-num_threads %d") % (qry_fasta, out_blast, threads)
+            self._cmd = ("blastn -query %s -db %s -out %s -evalue 1e-10 -outfmt 6 -num_alignments 5 "
+                         "-num_threads %d") % (qry_fasta, db_name, out_blast, threads)
             Message.info("\tRunning command: %s" % self._cmd)
             self.run()
             with open("blast.log", 'a') as fout:
@@ -109,7 +109,7 @@ class MCScanXRunner(Runner):
         if not path.exists("xyz/xyz.blast"):
             Message.info("\tRunning blast")
             blaster = BlastRunner()
-            blaster.blast(in_fa, in_fa, "xyz/xyz.blast", threads)
+            blaster.blast(in_fa, in_fa, "blastdb", "xyz/xyz.blast", threads)
         else:
             Message.info("Blast file found, skipping...")
 
