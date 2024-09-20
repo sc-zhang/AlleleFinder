@@ -51,10 +51,11 @@ def main():
                                     "that distribute in different allele should be pulled down as new allele genes",
                                type=int, required=True)
     parser_adjust.add_argument('-o', '--output', help="Output allele table", required=True)
-    parser_construct.set_defaults(func=allele_finder.workflow.adjust_pipe.main)
+    parser_adjust.set_defaults(func=allele_finder.workflow.adjust_pipe.main)
 
     try:
         args = parser.parse_args()
         args.func(args)
-    except AttributeError:
+    except AttributeError as e:
+        print(e)
         parser.print_help()
