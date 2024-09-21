@@ -206,7 +206,8 @@ class AlleleUtils:
     @staticmethod
     def adjust_allele_table(in_allele, ref_gff3, hap_gff3, ref_blast, hap_blast, iden, tandem, allele_num, out_allele,
                             is_mono, log_file):
-        log_file.write("Loading ref blast\n")
+        flog = open(log_file, 'w')
+        flog.write("Loading ref blast\n")
         ref_blast_db = {}
         with open(ref_blast, 'r') as fin:
             for line in fin:
@@ -222,7 +223,7 @@ class AlleleUtils:
                 if bs > ref_blast_db[hap_gn][-1]:
                     ref_blast_db[hap_gn] = [ref_gn, bs]
 
-        log_file.write("Loading hap blast\n")
+        flog.write("Loading hap blast\n")
         hap_blast_db = {}
         with open(hap_blast, 'r') as fin:
             for line in fin:
@@ -236,7 +237,7 @@ class AlleleUtils:
                     elif bi > hap_blast_db[gn1][1]:
                         hap_blast_db[gn1] = [gn2, bi]
 
-        log_file.write("Loading ref gff3\n")
+        flog.write("Loading ref gff3\n")
         ref_db = {}
         with open(ref_gff3, 'r') as fin:
             for line in fin:
@@ -251,7 +252,7 @@ class AlleleUtils:
                     if gid not in ref_db:
                         ref_db[gid] = [data[0], int(data[3])]
 
-        log_file.write("Loading hap gff3\n")
+        flog.write("Loading hap gff3\n")
         hap_db = {}
         with open(hap_gff3, 'r') as fin:
             for line in fin:
@@ -267,7 +268,7 @@ class AlleleUtils:
                     gid = re.findall(r'ID=(.*)', data[8])[0].split(';')[0]
                 hap_db[gid] = [chrn, int(data[3])]
 
-        log_file.write("Loading tandem\n")
+        flog.write("Loading tandem\n")
         tandem_db = {}
         with open(tandem, 'r') as fin:
             for line in fin:
@@ -275,7 +276,7 @@ class AlleleUtils:
                 for gid in data:
                     tandem_db[gid] = 1
 
-        log_file.write("Formatting allele table\n")
+        flog.write("Formatting allele table\n")
         full_allele = []
         info_db = {}
         line_cnt = 0
@@ -338,7 +339,7 @@ class AlleleUtils:
                 tmp_list.extend(info_db[ref_gn])
                 full_allele.append(tmp_list)
 
-        log_file.write("Writing allele table\n")
+        flog.write("Writing allele table\n")
         with open(out_allele, 'w') as fout:
             allele_header = []
             for i in range(0, allele_num):
@@ -347,7 +348,8 @@ class AlleleUtils:
             for info in sorted(full_allele):
                 fout.write("%s\n" % ('\t'.join(map(str, info))))
 
-        log_file.write("Finished\n")
+        flog.write("Finished\n")
+        flog.close()
 
 
 class GmapUtils:
@@ -410,7 +412,7 @@ class GmapUtils:
         pool.close()
         pool.join()
         allele_list = []
-        for chrn in res:
+        for chrn in res:ß
             allele_list.extend(res[chrn].get())
 
         return allele_list
@@ -440,7 +442,7 @@ class TEUtils:
         return new_regions
 
     @staticmethod
-    def check_ovlp(id, sp, ep, pos_list, thres):
+    def check_ovlp(gid, sp, ep, pos_list, thres):
         s = 0
         e = len(pos_list) - 1
         l = -1
@@ -498,7 +500,8 @@ class TEUtils:
 
     @staticmethod
     def filter_with_TE(in_allele, hap_gff3, in_TE, TE_thres, out_allele, log_file):
-        log_file.write("Loading TEs\n")
+        flog = open(log_file, 'w')
+        flog.write("Loading TEs\n")
         TE_db = {}
         with open(in_TE, 'r') as fin:
             for line in fin:
@@ -515,7 +518,7 @@ class TEUtils:
         for chrn in TE_db:
             TE_db[chrn] = TEUtils.merge_regions(sorted(TE_db[chrn]))
 
-        log_file.write("Getting overlap genes with TE\n")
+        flog.write("Getting overlap genes with TE\n")
         ovlp_ids = {}
         with open(hap_gff3, 'r') as fin:
             for line in fin:
@@ -536,7 +539,7 @@ class TEUtils:
                     if TEUtils.check_ovlp(gid, sp, ep, TE_db[chrn], TE_thres):
                         ovlp_ids[gid] = 1
 
-        log_file.write("Filtering allele table\n")
+        flog.write("Filtering allele table\n")
         remove_ids = []
         with open(in_allele, 'r') as fin:
             with open(out_allele, 'w') as fout:
@@ -564,7 +567,8 @@ class TEUtils:
         remove_fn = '.'.join(remove_fn)
         with open(remove_fn, 'w') as fout:
             fout.write('\n'.join(sorted(remove_ids)))
-        log_file.write("Finished\n")
+        flog.write("Finished\n")
+        flog.close()
 
 
 class GFF3Utils:

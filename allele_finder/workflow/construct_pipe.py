@@ -141,7 +141,7 @@ def pipeline(ref, ref_cds, ref_gff3, cds, gff3, allele_count, is_mono, blast_cou
     out_blast = hap_fn + '.vs.' + ref_fn + '.blast'
     if not path.exists(out_blast):
         blaster = BlastRunner()
-        blaster.blast(ref_cds, cds, out_blast, threads)
+        blaster.blast(ref_cds, cds, "blastdb", "1e-3", out_blast, 1, threads)
     else:
         Message.info("\tBlast file found, skip")
     out_blast = path.abspath(out_blast)
@@ -160,7 +160,7 @@ def pipeline(ref, ref_cds, ref_gff3, cds, gff3, allele_count, is_mono, blast_cou
         Message.info("Step7: Filtering with TEs")
         allele_file = "allele.adjusted.nonTEs.txt"
         if not path.exists(allele_file):
-            TEUtils.filter_with_TE(allele.adjusted.txt, gff3, TE_file, TE_thres,
+            TEUtils.filter_with_TE("allele.adjusted.txt", gff3, TE_file, TE_thres,
                                    "allele.adjusted.nonTEs.txt", "05.filter.log")
         else:
             Message.info("\tallele.adjusted.nonTEs.txt found, skipping...")
