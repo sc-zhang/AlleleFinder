@@ -423,7 +423,7 @@ class TEUtils:
         tmp_regions = []
         last_ep = 0
         for sp, ep in sorted(regions):
-            if tmp_regions == []:
+            if not tmp_regions:
                 tmp_regions.append(sp)
                 last_ep = ep
             else:
