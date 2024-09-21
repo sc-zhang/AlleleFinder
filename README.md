@@ -92,9 +92,9 @@ options:
 
 > **Notice:**
 > 1. the name of Chromosomes should be like: Chr01X, "X" means consecutive uppercase letters from A to Z, indicates
-     > different alleles, for example, if there are 4 alleles, the names should be: Chr01A,Chr01B,Chr01C,Chr01D.
-> 2. the gff3 files must contain "gene" records, or you can use "sed" command to change "mRNA" to "gene" for
-     > some downloaded gff3 files.
+     different alleles, for example, if there are 4 alleles, the names should be: Chr01A,Chr01B,Chr01C,Chr01D.
+> 2. the gff3 files must contain "gene" records, or you can use "sed" command to change "mRNA" to "gene" for some
+     downloaded gff3 files.
 > 3. there must no '-' in gene id.
 
 #### Results
