@@ -412,9 +412,8 @@ class GmapUtils:
         pool.close()
         pool.join()
         allele_list = []
-        for chrn in res:ß
+        for chrn in res:
             allele_list.extend(res[chrn].get())
-
         return allele_list
 
 
