@@ -6,9 +6,11 @@ This software is used for identifying allele genes from polyploid genome.
 
 Software:
 
-&ensp;&ensp;&ensp;&ensp;MCScanX  
-&ensp;&ensp;&ensp;&ensp;GMAP  
-&ensp;&ensp;&ensp;&ensp;NCBI BLAST+
+- [MCScanX](https://github.com/wyp1125/MCScanX)
+- [GMAP](http://research-pub.gene.com/gmap/)
+- [NCBI BLAST+](https://ftp.ncbi.nlm.nih.gov/blast/executables/blast+/LATEST/)
+
+> **Notice:** these software should be added to the <kbd>PATH</kbd> Environment Variable.
 
 ## Installation
 
@@ -88,12 +90,12 @@ options:
                         threads, default: 12
 ```
 
-> **Notice:** the name of Chromosomes should be like: Chr01X, "X" means consecutive uppercase letters from A to Z, means
-> different alleles, for example, if there are 4 alleles, the names should be: Chr01A,Chr01B,Chr01C,Chr01D  
-> **Notice:** the gff3 files must contain "gene" records, or you can use "sed" command to change "mRNA" to "gene" for
-> some
-> downloaded gff3 files.  
-> **Notice:** there must no '-' in gene id
+> **Notice:**
+> 1. the name of Chromosomes should be like: Chr01X, "X" means consecutive uppercase letters from A to Z, indicates
+     > different alleles, for example, if there are 4 alleles, the names should be: Chr01A,Chr01B,Chr01C,Chr01D.
+> 2. the gff3 files must contain "gene" records, or you can use "sed" command to change "mRNA" to "gene" for
+     > some downloaded gff3 files.
+> 3. there must no '-' in gene id.
 
 #### Results
 
@@ -140,7 +142,7 @@ options:
                         Output allele table
 ```
 
-> **Notice** because we only pull down the first paralog genes from each allele to contruct new allele, that means if
+> **Notice:** because we only pull down the first paralog genes from each allele to contruct new allele, that means if
 > there are more than one paralog genes in different alleles, you may need run this script more than one time to pull
 > all
 > paralog genes which with the distribution mentioned before down as new alleles.
