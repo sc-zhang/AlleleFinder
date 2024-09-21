@@ -15,16 +15,53 @@ Software:
 ```bash
 cd /path/to/install
 git clone https://github.com/sc-zhang/AlleleFinder.git
-chmod +x AlleleFinder/allele_finder/AlleleFinder
+chmod +x AlleleFinder/allelefinder.py
 # Optional
-echo 'export PATH=/path/to/install/AlleleFinder/allele_finder:$PATH' >> ~/.bash_profile
+echo 'export PATH=/path/to/install/AlleleFinder:$PATH' >> ~/.bash_profile
 source ~/.bash_profile
 ```
 
 ## Usage
 
+### 1. main program
+
 ```bash
-usage: AlleleFinder [-h] -r REF -d REF_CDS -f REF_GFF3 -c CDS -g GFF3 -n NUM_ALLELE [-m] [-b BLAST_COUNT] [-i BLAST_IDENTITY] [-e TE] [-j TE_OVERLAP] [-w WORKDIR] [-t THREADS]
+usage: allelefinder.py [-h] {prepare,construct,stat,adjust} ...
+
+options:
+  -h, --help            show this help message and exit
+
+Sub commands:
+  {prepare,construct,stat,adjust}
+    prepare             Remove same CDS from cds, pep and gff3 files
+    construct           Construct allele table
+    stat                Statistic allele table
+    adjust              Adjust allele table with too many genes be marked as paralog
+```
+
+### 2. prepare data
+
+If the genes with same CDS sequence, the "prepare" would deal with them and only one gene would be kept randomly.
+
+```bash
+usage: allelefinder.py prepare [-h] --in_cds IN_CDS [--in_pep IN_PEP] --in_gff3 IN_GFF3 --out_cds OUT_CDS [--out_pep OUT_PEP] --out_gff3 OUT_GFF3
+
+options:
+  -h, --help           show this help message and exit
+  --in_cds IN_CDS      Input CDS file
+  --in_pep IN_PEP      Input PEP file
+  --in_gff3 IN_GFF3    Input GFF3 file
+  --out_cds OUT_CDS    Output CDS file
+  --out_pep OUT_PEP    Output PEP file
+  --out_gff3 OUT_GFF3  Output GFF3 file
+```
+
+### 3. construct allele table
+
+#### Usage
+
+```bash
+usage: allelefinder.py construct [-h] -r REF -d REF_CDS -f REF_GFF3 -c CDS -g GFF3 -n NUM_ALLELE [-m] [-b BLAST_COUNT] [-i BLAST_IDENTITY] [-e TE] [-j TE_OVERLAP] [-w WORKDIR] [-t THREADS]
 
 options:
   -h, --help            show this help message and exit
@@ -51,32 +88,47 @@ options:
                         threads, default: 12
 ```
 
-**Notice:** the name of Chromosomes should be like: Chr01X, "X" means consecutive uppercase letters from A to Z, means
-different alleles, for example, if there are 4 alleles, the names should be: Chr01A,Chr01B,Chr01C,Chr01D  
-**Notice:** the gff3 files must contain "gene" records, or you can use "sed" command to change "mRNA" to "gene" for some
-downloaded gff3 files.  
-**Notice:** there must no '-' in gene id
+> **Notice:** the name of Chromosomes should be like: Chr01X, "X" means consecutive uppercase letters from A to Z, means
+> different alleles, for example, if there are 4 alleles, the names should be: Chr01A,Chr01B,Chr01C,Chr01D  
+> **Notice:** the gff3 files must contain "gene" records, or you can use "sed" command to change "mRNA" to "gene" for
+> some
+> downloaded gff3 files.  
+> **Notice:** there must no '-' in gene id
 
-## Results
+#### Results
 
 1. **Without TE filter**
 
-**allele.adjusted.txt** is the file contain all allele genes
+   **allele.adjusted.txt** is the file contain all allele genes
 
-**allele.adjusted.*.stat** are the statistics information of allele
+   **allele.adjusted.*.stat** are the statistics information of allele
 
 2. **With TE filter**
 
-**allele.adjusted.nonTEs.txt** is the file contain all allele genes
+   **allele.adjusted.nonTEs.txt** is the file contain all allele genes
 
-**allele.adjusted.nonTEs.*.stat** are the statistics information of allele
+   **allele.adjusted.nonTEs.*.stat** are the statistics information of allele
 
-## Additional
-
-If there are too many genes be marked with paralog, you can use pull_down_paralog.py to pull them down as new alleles
+### 3. Statistic
 
 ```bash
-usage: pull_down_paralog.py [-h] -i INPUT -m MIN_NUM -o OUTPUT
+usage: allelefinder.py stat [-h] -i INPUT -g GFF3 -o OUTPUT
+
+options:
+  -h, --help            show this help message and exit
+  -i INPUT, --input INPUT
+                        Input allele table
+  -g GFF3, --gff3 GFF3  GFF3 file of polyploid
+  -o OUTPUT, --output OUTPUT
+                        Prefix of output file
+```
+
+### 4. Additional
+
+If there are too many genes be marked with paralog, you can use command below to pull them down as new alleles
+
+```bash
+usage: allelefinder.py adjust [-h] -i INPUT -m MIN_NUM -o OUTPUT
 
 options:
   -h, --help            show this help message and exit
@@ -88,6 +140,7 @@ options:
                         Output allele table
 ```
 
-**Notice** because we only pull down the first paralog genes from each allele to contruct new allele, that means if
-there are more than one paralog genes in different alleles, you may need run this script more than one time to pull all
-paralog genes which with the distribution mentioned before down as new alleles.
+> **Notice** because we only pull down the first paralog genes from each allele to contruct new allele, that means if
+> there are more than one paralog genes in different alleles, you may need run this script more than one time to pull
+> all
+> paralog genes which with the distribution mentioned before down as new alleles.
