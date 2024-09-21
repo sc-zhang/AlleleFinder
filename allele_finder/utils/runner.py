@@ -80,8 +80,10 @@ class BlastRunner(Runner):
                 fout.write("%s\n" % self._res)
                 fout.write("%s\n" % self._err)
 
-            self._cmd = ("blastn -query %s -db %s -out %s -evalue %s -outfmt 6 -num_alignments %d "
-                         "-num_threads %d") % (qry_fasta, db_name, out_blast, evalue, num_alignments, threads)
+            blast_program = "blastn" if fa_type == "nucl" else "blastp"
+            self._cmd = ("%s -query %s -db %s -out %s -evalue %s -outfmt 6 -num_alignments %d "
+                         "-num_threads %d") % (
+                        blast_program, qry_fasta, db_name, out_blast, evalue, num_alignments, threads)
             Message.info("\tRunning command: %s" % self._cmd)
             self.run()
             with open("blast.log", 'a') as fout:
