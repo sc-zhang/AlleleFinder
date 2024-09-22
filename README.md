@@ -58,6 +58,8 @@ options:
   --out_gff3 OUT_GFF3  Output GFF3 file
 ```
 
+> **Notice:** CDS file and GFF3 file are required, PEP file is optional.
+
 ### 3. construct allele table
 
 #### Usage
