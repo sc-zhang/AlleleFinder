@@ -144,7 +144,7 @@ options:
                         Output allele table
 ```
 
-> **Notice:** because we only pull down the first paralog genes from each allele to contruct new allele, that means if
+> **Notice:** because we only pull down the first paralog genes from each allele to construct new allele, that means if
 > there are more than one paralog genes in different alleles, you may need run this script more than one time to pull
 > all
 > paralog genes which with the distribution mentioned before down as new alleles.
