@@ -74,6 +74,17 @@ class FastaUtils:
                     return "nucl"
 
     @staticmethod
+    def get_seq_ids(fasta_file):
+        gene_id_set = set()
+        with open(fasta_file, 'r') as fin:
+            for line in fin:
+                if not line.strip():
+                    continue
+                if line[0] == '>':
+                    gene_id_set.add(line.strip().split()[0][1:])
+        return gene_id_set
+
+    @staticmethod
     def split_fasta_with_allele(in_fa, in_allele, out_pre):
         fa_db = {}
         with open(in_fa, 'r') as fin:

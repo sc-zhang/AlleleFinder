@@ -83,7 +83,7 @@ class BlastRunner(Runner):
             blast_program = "blastn" if fa_type == "nucl" else "blastp"
             self._cmd = ("%s -query %s -db %s -out %s -evalue %s -outfmt 6 -num_alignments %d "
                          "-num_threads %d") % (
-                        blast_program, qry_fasta, db_name, out_blast, evalue, num_alignments, threads)
+                            blast_program, qry_fasta, db_name, out_blast, evalue, num_alignments, threads)
             Message.info("\tRunning command: %s" % self._cmd)
             self.run()
             with open("blast.log", 'a') as fout:
@@ -108,14 +108,7 @@ class MCScanXRunner(Runner):
         if not path.exists("xyz"):
             makedirs("xyz")
 
-        if not path.exists("xyz/xyz.blast"):
-            Message.info("\tRunning blast")
-            blaster = BlastRunner()
-            blaster.blast(in_fa, in_fa, "blastdb", "1e-10",
-                          "xyz/xyz.blast", 5, threads)
-        else:
-            Message.info("Blast file found, skipping...")
-
+        gff_id_set = set()
         if not path.exists("xyz/xyz.gff"):
             Message.info("\tLoading gff3")
             gff3_db = {}
@@ -136,17 +129,40 @@ class MCScanXRunner(Runner):
                         if chrn not in gff3_db:
                             gff3_db[chrn] = []
                         gff3_db[chrn].append([gid, int(data[3]), int(data[4])])
+                        gff_id_set.add(gid)
 
             Message.info("\tWriting gff")
             idx = 1
             with open(path.join("xyz/xyz.gff"), 'w') as fout:
                 for chrn in sorted(gff3_db):
-                    spid = "NN%02d" % (idx)
+                    spid = "NN%02d" % idx
                     idx += 1
                     for gid, sp, ep in sorted(gff3_db[chrn]):
                         fout.write("%s\t%s\t%d\t%d\n" % (spid, gid, sp, ep))
         else:
             Message.info("\tGFF file found, skipping...")
+            with open(path.join("xyz/xyz.gff"), 'r') as fin:
+                for line in fin:
+                    gff_id_set.add(line.strip().split()[1])
+
+        cds_id_set = FastaUtils.get_seq_ids(in_fa)
+        match_ratio = len(cds_id_set.intersection(gff_id_set)) * 1. / min(len(cds_id_set), len(gff_id_set))
+
+        if match_ratio < 0.5:
+            Message.error("\tFatal error: Critical low match ratio %.2f%% between gff3 file and CDS file, "
+                          "please check input files!" % (match_ratio * 100))
+            Message.error("\tID in gff file: %s, ID in CDS file: %s" % (sorted(gff_id_set)[0], sorted(cds_id_set)[0]))
+            Message.error("\tGene ID in gff3 file are extracted with \"Name\" feature if exists, otherwise \"ID\" "
+                          "feature would be extracted, please check these features with CDS file")
+            exit(-1)
+
+        if not path.exists("xyz/xyz.blast"):
+            Message.info("\tRunning blast")
+            blaster = BlastRunner()
+            blaster.blast(in_fa, in_fa, "blastdb", "1e-10",
+                          "xyz/xyz.blast", 5, threads)
+        else:
+            Message.info("Blast file found, skipping...")
 
         self._cmd = "MCScanX xyz/xyz"
         Message.info("\tRunning command: %s" % self._cmd)
