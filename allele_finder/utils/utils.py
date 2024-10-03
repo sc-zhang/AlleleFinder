@@ -369,7 +369,7 @@ class GmapUtils:
         gff3_db = {}
         gene_order = {}
         gene_cnt = {}
-        with (open(in_gff3, 'r') as fin):
+        with open(in_gff3, 'r') as fin:
             for line in fin:
                 if line.strip() == '' or line[0] == '#':
                     continue
