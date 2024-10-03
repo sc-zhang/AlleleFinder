@@ -22,12 +22,18 @@ def stat_formatted_allele(allele_file, hap_gff3, out_pre):
     Message.info("Loading allele table")
     allele_summary = {}
     gene_cnt_summary = {}
+    has_header = False
     with open(allele_file, 'r') as fin:
         for line in fin:
             data = line.strip().split('\t')
             if line[0] == '#':
+                has_header = True
                 allele_cnt = len(data) - 3
                 continue
+
+            if not has_header:
+                Message.error("Fatal error: Missing header")
+                exit(-1)
 
             tand_cnt = 0
             disp_cnt = 0
