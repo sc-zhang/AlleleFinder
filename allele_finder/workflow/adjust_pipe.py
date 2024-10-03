@@ -47,7 +47,7 @@ def pull_down_paralog(in_allele, min_num, out_allele):
                 is_complete = False
                 new_allele = data[:3]
                 for _ in range(allele_cnt):
-                    new_allele.append("")
+                    new_allele.append("NA")
                 for i in range(3, len(data)):
                     sub_genes = data[i].split(',')
                     new_sub_genes = []
