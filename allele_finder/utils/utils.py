@@ -249,7 +249,7 @@ class AlleleUtils:
                         hap_blast_db[gn1] = [gn2, bi]
 
         flog.write("Loading ref gff3\n")
-        ref_db = {}
+        ref_db = {"NA": ["NA", "NA"]}
         with open(ref_gff3, 'r') as fin:
             for line in fin:
                 if line.strip() == '' or line[0] == '#':
@@ -302,15 +302,15 @@ class AlleleUtils:
                     hidx = ord(hchrn[-1]) - 65
                     if gid not in ref_blast_db:
                         if gid not in hap_blast_db:
-                            continue
-                        ref_id = hap_blast_db[gid][0]
+                            ref_id = "NA"
+                        else:
+                            ref_id = hap_blast_db[gid][0]
                     else:
                         ref_id = gid
                     if ref_id not in ref_blast_db or ref_id not in data:
-                        continue
-                    ref_gn = ref_blast_db[ref_id][0]
-                    if ref_gn not in ref_db:
-                        continue
+                        ref_gn = "NA:::%d" % line_cnt
+                    else:
+                        ref_gn = ref_blast_db[ref_id][0]
                     if is_mono:
                         if ref_gn not in info_db:
                             info_db[ref_gn] = [[] for _ in range(0, allele_num)]
@@ -341,7 +341,7 @@ class AlleleUtils:
 
                 if null_cnt == allele_num:
                     continue
-                if not is_mono:
+                if not is_mono or ref_gn.startswith("NA"):
                     ori_gn = ref_gn.split(":::")[0]
                 else:
                     ori_gn = ref_gn
