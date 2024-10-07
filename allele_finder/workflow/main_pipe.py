@@ -22,7 +22,7 @@ def main():
     parser_construct.add_argument('-g', '--gff3', help="GFF3 file of polyploid", required=True)
     parser_construct.add_argument('-n', '--num_allele', help="number of allele", type=int, required=True)
     parser_construct.add_argument('-m', '--is_mono',
-                                  help="If your reference fasta is mono assembly of polyploid, add this argument",
+                                  help="if your reference fasta is mono assembly of polyploid, add this argument",
                                   action="store_true")
     parser_construct.add_argument('-b', '--blast_count', help="blast count, default: 2",
                                   type=int, default=2)
@@ -33,6 +33,8 @@ def main():
                                   help="threshold of TE overlap, default: 0.3, only effect when TE is not NULL",
                                   type=float,
                                   default=0.3)
+    parser_construct.add_argument('--paralog_only', help="do TE filter only on paralog genes",
+                                  action="store_true")
     parser_construct.add_argument('-w', '--workdir', help="workdir, default: wrkdir", default="wrkdir")
     parser_construct.add_argument('-t', '--threads', help="threads, default: 12", default=12, type=int)
     parser_construct.set_defaults(func=allele_finder.workflow.construct_pipe.main)

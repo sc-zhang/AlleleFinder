@@ -509,7 +509,7 @@ class TEUtils:
             return False
 
     @staticmethod
-    def filter_with_TE(in_allele, hap_gff3, in_TE, TE_thres, out_allele, log_file):
+    def filter_with_TE(in_allele, hap_gff3, in_TE, TE_thres, TE_filter_only_paralog, out_allele, log_file):
         flog = open(log_file, 'w')
         flog.write("Loading TEs\n")
         TE_db = {}
@@ -563,14 +563,55 @@ class TEUtils:
                                 continue
                             ids = data[i].split(',')
                             tmp_ids = []
-                            for gid in ids:
-                                if '-' in gid and gid[-1] == 'P':
-                                    rid = gid.split('-')[0]
+                            if not TE_filter_only_paralog:
+                                for gid in ids:
+                                    if '-' in gid:
+                                        rid = gid.split('-')[0]
+                                    else:
+                                        rid = gid
                                     if rid in ovlp_ids:
                                         remove_ids.append(rid)
                                         continue
-                                tmp_ids.append(gid)
+                                    tmp_ids.append(gid)
+                                if not tmp_ids:
+                                    tmp_ids.append('NA')
+                                else:
+                                    normal_ids = []
+                                    tandem_ids = []
+                                    paralog_ids = []
+                                    for gid in tmp_ids:
+                                        if '-' not in gid:
+                                            normal_ids.append(gid)
+                                        else:
+                                            if gid[-1] == 'P':
+                                                paralog_ids.append(gid)
+                                            else:
+                                                tandem_ids.append(gid)
+                                    if not normal_ids:
+                                        if paralog_ids:
+                                            normal_ids = [paralog_ids[0].split('-')[0]]
+                                            paralog_ids = paralog_ids[1:]
+                                        elif tandem_ids:
+                                            normal_ids = [tandem_ids[0].split('-')[0]]
+                                            tandem_ids = tandem_ids[1:]
+                                        else:
+                                            normal_ids = []
+                                    tmp_ids = normal_ids
+                                    tmp_ids.extend(tandem_ids)
+                                    tmp_ids.extend(paralog_ids)
+                            else:
+                                for gid in ids:
+                                    if '-' in gid and gid[-1] == 'P':
+                                        rid = gid.split('-')[0]
+                                        if rid in ovlp_ids:
+                                            remove_ids.append(rid)
+                                            continue
+                                    tmp_ids.append(gid)
+
                             data[i] = ','.join(tmp_ids)
+                        # drop all NA line
+                        if len(set(data[3:])) == 1:
+                            continue
                         fout.write("%s\n" % ('\t'.join(data)))
         remove_fn = out_allele.split('.')
         remove_fn[-1] = 'removed.txt'

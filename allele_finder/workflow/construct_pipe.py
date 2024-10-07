@@ -19,14 +19,18 @@ def main(args):
     iden_thres = args.blast_identity
     TE_file = args.TE
     TE_thres = args.TE_overlap
+    if args.paralog_only:
+        TE_filter_only_paralog = True
+    else:
+        TE_filter_only_paralog = False
     wrkdir = args.workdir
     threads = args.threads
     pipeline(ref, ref_cds, ref_gff3, cds, gff3, allele_count, is_mono, blast_count, iden_thres,
-             TE_file, TE_thres, wrkdir, threads)
+             TE_file, TE_thres, TE_filter_only_paralog, wrkdir, threads)
 
 
 def pipeline(ref, ref_cds, ref_gff3, cds, gff3, allele_count, is_mono, blast_count, iden_thres,
-             TE_file, TE_thres, wrkdir, threads):
+             TE_file, TE_thres, TE_filter_only_paralog, wrkdir, threads):
     if not path.exists(wrkdir):
         makedirs(wrkdir)
     ref = path.abspath(ref)
@@ -160,7 +164,7 @@ def pipeline(ref, ref_cds, ref_gff3, cds, gff3, allele_count, is_mono, blast_cou
         Message.info("Step7: Filtering with TEs")
         allele_file = "allele.adjusted.nonTEs.txt"
         if not path.exists(allele_file):
-            TEUtils.filter_with_TE("allele.adjusted.txt", gff3, TE_file, TE_thres,
+            TEUtils.filter_with_TE("allele.adjusted.txt", gff3, TE_file, TE_thres, TE_filter_only_paralog,
                                    "allele.adjusted.nonTEs.txt", "05.filter.log")
         else:
             Message.info("\tallele.adjusted.nonTEs.txt found, skipping...")

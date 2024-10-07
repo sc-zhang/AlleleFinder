@@ -65,7 +65,7 @@ options:
 #### Usage
 
 ```bash
-usage: allelefinder.py construct [-h] -r REF -d REF_CDS -f REF_GFF3 -c CDS -g GFF3 -n NUM_ALLELE [-m] [-b BLAST_COUNT] [-i BLAST_IDENTITY] [-e TE] [-j TE_OVERLAP] [-w WORKDIR] [-t THREADS]
+usage: allelefinder.py construct [-h] -r REF -d REF_CDS -f REF_GFF3 -c CDS -g GFF3 -n NUM_ALLELE [-m] [-b BLAST_COUNT] [-i BLAST_IDENTITY] [-e TE] [-j TE_OVERLAP] [--paralog_only] [-w WORKDIR] [-t THREADS]
 
 options:
   -h, --help            show this help message and exit
@@ -78,7 +78,7 @@ options:
   -g GFF3, --gff3 GFF3  GFF3 file of polyploid
   -n NUM_ALLELE, --num_allele NUM_ALLELE
                         number of allele
-  -m, --is_mono         If your reference fasta is mono assembly of polyploid, add this argument
+  -m, --is_mono         if your reference fasta is mono assembly of polyploid, add this argument
   -b BLAST_COUNT, --blast_count BLAST_COUNT
                         blast count, default: 2
   -i BLAST_IDENTITY, --blast_identity BLAST_IDENTITY
@@ -86,6 +86,7 @@ options:
   -e TE, --TE TE        TE gff3 for filtering, default: ""
   -j TE_OVERLAP, --TE_overlap TE_OVERLAP
                         threshold of TE overlap, default: 0.3, only effect when TE is not NULL
+  --paralog_only        do TE filter only on paralog genes
   -w WORKDIR, --workdir WORKDIR
                         workdir, default: wrkdir
   -t THREADS, --threads THREADS
