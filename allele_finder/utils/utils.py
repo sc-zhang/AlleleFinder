@@ -256,10 +256,7 @@ class AlleleUtils:
                     continue
                 data = line.strip().split()
                 if data[2] == 'gene':
-                    if "Name" in data[8]:
-                        gid = re.findall(r'Name=(.*)', data[8])[0].split(';')[0]
-                    else:
-                        gid = re.findall(r'ID=(.*)', data[8])[0].split(';')[0]
+                    gid = GFF3Utils.get_gene_id(data[8])
                     if gid not in ref_db:
                         ref_db[gid] = [data[0], int(data[3])]
 
@@ -273,10 +270,7 @@ class AlleleUtils:
                 if data[2] != 'gene':
                     continue
                 chrn = data[0]
-                if "Name" in data[8]:
-                    gid = re.findall(r'Name=(.*)', data[8])[0].split(';')[0]
-                else:
-                    gid = re.findall(r'ID=(.*)', data[8])[0].split(';')[0]
+                gid = GFF3Utils.get_gene_id(data[8])
                 hap_db[gid] = [chrn, int(data[3])]
 
         flog.write("Loading tandem\n")
@@ -322,12 +316,13 @@ class AlleleUtils:
                         if tmp_gn not in info_db:
                             info_db[tmp_gn] = [[] for _ in range(0, allele_num)]
                         info_db[tmp_gn][hidx].append([hpos, gid])
-
+            new_info_db = {}
             for ref_gn in info_db:
+                new_info_db[ref_gn] = ["" for _ in range(0, len(info_db[ref_gn]))]
                 null_cnt = 0
                 for i in range(0, len(info_db[ref_gn])):
                     if not info_db[ref_gn][i]:
-                        info_db[ref_gn][i] = "NA"
+                        new_info_db[ref_gn][i] = "NA"
                         null_cnt += 1
                     else:
                         tmp_list = sorted(info_db[ref_gn][i])
@@ -339,7 +334,7 @@ class AlleleUtils:
                                     tmp_ids.append(gid + "-T")
                                 else:
                                     tmp_ids.append(gid + "-P")
-                        info_db[ref_gn][i] = ','.join(tmp_ids)
+                        new_info_db[ref_gn][i] = ','.join(tmp_ids)
 
                 if null_cnt == allele_num:
                     continue
@@ -349,7 +344,7 @@ class AlleleUtils:
                     ori_gn = ref_gn
                 tmp_list = copy.deepcopy(ref_db[ori_gn])
                 tmp_list.append(ori_gn)
-                tmp_list.extend(info_db[ref_gn])
+                tmp_list.extend(new_info_db[ref_gn])
                 full_allele.append(tmp_list)
 
         flog.write("Writing allele table\n")
@@ -357,7 +352,7 @@ class AlleleUtils:
             allele_header = []
             for i in range(0, allele_num):
                 allele_header.append("Allele %s" % (chr(i + 65)))
-            fout.write("#CHR\tPOS\tref gene\t%s\n" % ('\t'.join(allele_header)))
+            fout.write("#CHR\tPOS\tRef gene\t%s\n" % ('\t'.join(allele_header)))
             for info in sorted(full_allele):
                 fout.write("%s\n" % ('\t'.join(map(str, info))))
 
@@ -368,6 +363,7 @@ class AlleleUtils:
 class GmapUtils:
     @staticmethod
     def read_gff3(in_gff3):
+        drop_pre_set = {'ctg', 'utg', 'tig', 'sca', 'sup'}
         gff3_db = {}
         gene_order = {}
         gene_cnt = {}
@@ -376,8 +372,7 @@ class GmapUtils:
                 if line.strip() == '' or line[0] == '#':
                     continue
                 data = line.strip().split()
-                if 'ctg' in data[0] or 'tig' in data[0] or 'utg' in data[0] or 'scaffold' in data[0] or 'super' in data[
-                    0]:
+                if data[0][:3].lower() in drop_pre_set:
                     continue
                 chrn = re.findall(r'([A-Za-z]+\d+).*', data[0])[0]
                 feature_type = data[2]
@@ -385,12 +380,7 @@ class GmapUtils:
                     continue
                 sp = int(data[3])
                 ep = int(data[4])
-                if 'Name' in data[8]:
-                    gene = re.findall(r'Name=(.*)', data[8])[0].split(';')[0]
-                else:
-                    gene = re.findall(r'ID=(.*)', data[8])[0].split(';')[0]
-                if 'tig' in gene or 'ctg' in gene:
-                    continue
+                gene = GFF3Utils.get_gene_id(data[8])
                 if chrn not in gff3_db:
                     gff3_db[chrn] = []
                 if chrn not in gene_cnt:
@@ -454,47 +444,41 @@ class TEUtils:
         return new_regions
 
     @staticmethod
-    def check_ovlp(gid, sp, ep, pos_list, thres):
+    def bin_search(qry_pos, pos_list):
         s = 0
         e = len(pos_list) - 1
-        l = -1
+        target_idx = -1
         while s <= e:
             mid = int((s + e) / 2)
-            if pos_list[mid][0] < sp:
+            if pos_list[mid][0] < qry_pos:
                 s = mid + 1
-            elif pos_list[mid][0] > sp:
+            elif pos_list[mid][0] > qry_pos:
                 e = mid - 1
             else:
-                l = mid
+                target_idx = mid
                 break
-        if l == -1:
-            if e == -1:
-                e = 0
-            if pos_list[e][1] >= sp:
-                l = e
+        return target_idx, e
+
+    @staticmethod
+    def check_ovlp(sp, ep, pos_list, thres):
+        lbound, candidate_lbound = TEUtils.bin_search(sp, pos_list)
+        if lbound == -1:
+            if candidate_lbound == -1:
+                candidate_lbound = 0
+            if pos_list[candidate_lbound][1] >= sp:
+                lbound = candidate_lbound
             else:
-                l = e + 1
-        s = 0
-        e = len(pos_list) - 1
-        r = -1
-        while s <= e:
-            mid = int((s + e) / 2)
-            if pos_list[mid][0] < ep:
-                s = mid + 1
-            elif pos_list[mid][0] > ep:
-                e = mid - 1
-            else:
-                r = mid
-                break
-        if r == -1:
-            if e == -1:
-                e = 0
-            r = e
+                lbound = candidate_lbound + 1
+        rbound, candidate_rbound = TEUtils.bin_search(ep, pos_list)
+        if rbound == -1:
+            if candidate_rbound == -1:
+                candidate_rbound = 0
+            rbound = candidate_rbound
 
         ovlp_len = 0
-        if l <= r:
+        if lbound <= rbound:
             tmp_regions = []
-            for rsp, rep in pos_list[l: r + 1]:
+            for rsp, rep in pos_list[lbound: rbound + 1]:
                 ovlp = min(ep, rep) - max(sp, rsp) + 1
                 if ovlp <= 0:
                     continue
@@ -511,11 +495,11 @@ class TEUtils:
             return False
 
     @staticmethod
-    def filter_with_TE(in_allele, hap_gff3, in_TE, TE_thres, TE_filter_only_paralog, out_allele, log_file):
+    def filter_with_TE(in_allele, hap_gff3, in_te, te_thres, te_filter_only_paralog, out_allele, log_file):
         flog = open(log_file, 'w')
         flog.write("Loading TEs\n")
         TE_db = {}
-        with open(in_TE, 'r') as fin:
+        with open(in_te, 'r') as fin:
             for line in fin:
                 if line.strip() == '' or line[0] == '#':
                     continue
@@ -531,7 +515,7 @@ class TEUtils:
             TE_db[chrn] = TEUtils.merge_regions(sorted(TE_db[chrn]))
 
         flog.write("Getting overlap genes with TE\n")
-        ovlp_ids = {}
+        ovlp_ids = set()
         with open(hap_gff3, 'r') as fin:
             for line in fin:
                 if line.strip() == '' or line[0] == '#':
@@ -548,8 +532,8 @@ class TEUtils:
                     gid = re.findall(r'ID=(.*)', data[8])[0].split(';')[0]
 
                 if chrn in TE_db:
-                    if TEUtils.check_ovlp(gid, sp, ep, TE_db[chrn], TE_thres):
-                        ovlp_ids[gid] = 1
+                    if TEUtils.check_ovlp(sp, ep, TE_db[chrn], te_thres):
+                        ovlp_ids.add(gid)
 
         flog.write("Filtering allele table\n")
         remove_ids = []
@@ -565,7 +549,7 @@ class TEUtils:
                                 continue
                             ids = data[i].split(',')
                             tmp_ids = []
-                            if not TE_filter_only_paralog:
+                            if not te_filter_only_paralog:
                                 for gid in ids:
                                     if '-' in gid:
                                         rid = gid.split('-')[0]
@@ -646,3 +630,11 @@ class GFF3Utils:
                                 is_write = True
                         if is_write:
                             fout.write(line)
+
+    @staticmethod
+    def get_gene_id(gff_id_col):
+        if "Name" in gff_id_col:
+            gid = re.findall(r'Name=(.*)', gff_id_col)[0].split(';')[0]
+        else:
+            gid = re.findall(r'ID=(.*)', gff_id_col)[0].split(';')[0]
+        return gid
