@@ -37,7 +37,7 @@ def stat_formatted_allele(allele_file, hap_gff3, out_pre):
 
             tand_cnt = 0
             disp_cnt = 0
-            allele_cnt_list = [0 for i in range(0, allele_cnt)]
+            allele_cnt_list = [0 for _ in range(0, allele_cnt)]
             gene_cnt = 0
             for i in range(3, len(data)):
                 if data[i] == 'NA':
@@ -69,7 +69,7 @@ def stat_formatted_allele(allele_file, hap_gff3, out_pre):
                     max_chrn = chrn
             if max_chrn not in allele_summary:
                 # [[allele count list], tandem count, dispersely count, line count]
-                allele_summary[max_chrn] = [[0 for i in range(0, allele_cnt)], 0, 0, 0]
+                allele_summary[max_chrn] = [[0 for _ in range(0, allele_cnt)], 0, 0, 0]
 
             allele_summary[max_chrn][-1] += 1
             for i in range(0, allele_cnt):
@@ -79,7 +79,7 @@ def stat_formatted_allele(allele_file, hap_gff3, out_pre):
             allele_summary[max_chrn][2] += disp_cnt
 
             if max_chrn not in gene_cnt_summary:
-                gene_cnt_summary[max_chrn] = [0 for i in range(0, allele_cnt)]
+                gene_cnt_summary[max_chrn] = [0 for _ in range(0, allele_cnt)]
             gene_cnt_summary[max_chrn][gene_cnt - 1] += 1
 
     Message.info("Writing summary")
@@ -88,7 +88,7 @@ def stat_formatted_allele(allele_file, hap_gff3, out_pre):
         for i in range(0, allele_cnt):
             allele_list.append("Allele %s" % chr(65 + i))
         fout.write("#CHR,Line count,%s,Tandem,Dispersely\n" % (','.join(allele_list)))
-        sum_info = [0 for i in range(0, allele_cnt + 3)]
+        sum_info = [0 for _ in range(0, allele_cnt + 3)]
         for chrn in sorted(allele_summary):
             info = [chrn, allele_summary[chrn][3]]
             info.extend(allele_summary[chrn][0])
@@ -104,7 +104,7 @@ def stat_formatted_allele(allele_file, hap_gff3, out_pre):
 
     with open(out_pre + '.genes.stat', 'w') as fout:
         gene_cnt_list = []
-        sum_info = [0 for i in range(0, allele_cnt + 3)]
+        sum_info = [0 for _ in range(0, allele_cnt + 3)]
         for i in range(allele_cnt, 0, -1):
             gene_cnt_list.append('No. with %d' % i)
         fout.write("#CHR,Total count of allele genes,%s,Tandem,Dispersely\n" % (','.join(gene_cnt_list)))
