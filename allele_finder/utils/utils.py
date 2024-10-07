@@ -300,6 +300,8 @@ class AlleleUtils:
                         continue
                     hchrn, hpos = hap_db[gid]
                     hidx = ord(hchrn[-1]) - 65
+                    if hidx < 0 or hidx >= allele_num:
+                        continue
                     if gid not in ref_blast_db:
                         if gid not in hap_blast_db:
                             ref_id = "NA"
