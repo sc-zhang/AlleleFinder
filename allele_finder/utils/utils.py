@@ -30,6 +30,7 @@ class FastaUtils:
                     seq_db[full_seq] = set()
                 seq_db[full_seq].add(gid)
 
+        retain_db = {}
         dup_db = {}
         for _ in seq_db:
             if len(seq_db[_]) != 1:
@@ -37,9 +38,13 @@ class FastaUtils:
                 random.shuffle(seq_ids)
                 retain_id = seq_ids[0]
                 for gid in seq_db[_]:
-                    dup_db[gid] = retain_id
+                    retain_db[gid] = retain_id
+                dup_db[retain_id] = []
+                for gid in seq_db[_]:
+                    if gid != retain_id:
+                        dup_db[retain_id].append(gid)
 
-        return dup_db
+        return retain_db, dup_db
 
     @staticmethod
     def filter_fasta(in_fasta, out_fasta, drop_id_set):
