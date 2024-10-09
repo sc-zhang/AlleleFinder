@@ -616,12 +616,15 @@ class TEUtils:
 class GFF3Utils:
     @staticmethod
     def filter_gff3(in_gff3, out_gff3, drop_id_set):
+        last_line = ""
         with open(in_gff3, 'r') as fin:
             with open(out_gff3, 'w') as fout:
-                is_write = False
                 for line in fin:
                     if line.strip() == '' or line[0] == '#':
+                        if line == last_line:
+                            continue
                         fout.write(line)
+                        last_line = line
                     else:
                         data = line.strip().split()
                         if data[2] == 'gene':
@@ -629,12 +632,10 @@ class GFF3Utils:
                                 gid = re.findall(r'Name=(.*)', data[8])[0].split(';')[0]
                             else:
                                 gid = re.findall(r'ID=(.*)', data[8])[0].split(';')[0]
-                            if gid in drop_id_set:
-                                is_write = False
-                            else:
-                                is_write = True
-                        if is_write:
+
+                        if gid not in drop_id_set:
                             fout.write(line)
+                            last_line = line
 
     @staticmethod
     def get_gene_id(gff_id_col):
