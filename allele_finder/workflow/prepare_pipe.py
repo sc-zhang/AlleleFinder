@@ -12,6 +12,7 @@ def prepare_files(in_cds_file, in_pep_file, in_gff3_file, out_cds_file, out_pep_
     Message.info("%d duplicate CDS found" % len(drop_set))
 
     with open("DuplicateCDS.list", 'w') as fout:
+        fout.write("#RetainID\tDupID\n")
         for gid in sorted(dup_db):
             fout.write("%s\t%s\n" % (gid, ','.join(dup_db[gid])))
 
