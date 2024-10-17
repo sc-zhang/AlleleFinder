@@ -1,6 +1,7 @@
 from subprocess import Popen, PIPE
 from allele_finder.utils.message import Message
 from allele_finder.utils.utils import FastaUtils
+from allele_finder.utils.dependencies_checker import DependChecker
 from os import path, makedirs, chdir, getcwd
 import re
 
@@ -39,6 +40,10 @@ class GmapRunner(Runner):
         Message.info("\tEntering %s" % workdir)
         chdir(workdir)
 
+        if not DependChecker.check("gmap --version"):
+            Message.error("\tGMAP not found, Aborting...")
+            exit(-1)
+
         if not path.exists("CpDB"):
             self._cmd = "gmap_build -D . -d CpDB %s" % ref_mono
             Message.info("\tRunning command: %s" % self._cmd)
@@ -71,6 +76,9 @@ class GmapRunner(Runner):
 class BlastRunner(Runner):
     def blast(self, ref_fasta, qry_fasta, db_name, evalue, out_blast, num_alignments, threads):
         if not path.exists(out_blast):
+            if not DependChecker.check("makeblastdb -version"):
+                Message.error("\tBlast not found, aborting...")
+                exit(-1)
             Message.info("\tRunning blast")
             fa_type = FastaUtils.check_fasta_type(ref_fasta)
             self._cmd = "makeblastdb -in %s -dbtype %s -out %s" % (ref_fasta, fa_type, db_name)
@@ -105,6 +113,11 @@ class MCScanXRunner(Runner):
         cur_dir = getcwd()
         Message.info("\tEntering %s" % out_dir)
         chdir(out_dir)
+
+        if not DependChecker.check("MCScanX -h"):
+            Message.error("\tMCScanX not found, aborting...")
+            exit(-1)
+
         if not path.exists("xyz"):
             makedirs("xyz")
 

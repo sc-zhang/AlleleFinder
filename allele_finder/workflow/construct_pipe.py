@@ -17,16 +17,16 @@ def main(args):
     allele_count = args.num_allele
     blast_count = args.blast_count
     iden_thres = args.blast_identity
-    TE_file = args.TE
-    TE_thres = args.TE_overlap
+    te_file = args.TE
+    te_thres = args.TE_overlap
     if args.paralog_only:
-        TE_filter_only_paralog = True
+        te_filter_only_paralog = True
     else:
-        TE_filter_only_paralog = False
+        te_filter_only_paralog = False
     wrkdir = args.workdir
     threads = args.threads
     pipeline(ref, ref_cds, ref_gff3, cds, gff3, allele_count, is_mono, blast_count, iden_thres,
-             TE_file, TE_thres, TE_filter_only_paralog, wrkdir, threads)
+             te_file, te_thres, te_filter_only_paralog, wrkdir, threads)
 
 
 def pipeline(ref, ref_cds, ref_gff3, cds, gff3, allele_count, is_mono, blast_count, iden_thres,
