@@ -13,11 +13,18 @@ def stat_formatted_allele(allele_file, hap_gff3, out_pre):
             if 'ctg' in data[0] or 'tig' in data[0] or 'utg' in data[0]:
                 continue
             chrn = "Chr%02d" % (int(re.findall(r'[A-Za-z](\d+)', data[0])[0]))
-            if "Name" in data[8]:
-                gid = re.findall(r'Name=(.*)', data[8])[0].split(';')[0]
-            else:
-                gid = re.findall(r'ID=(.*)', data[8])[0].split(';')[0]
-            hap_db[gid] = chrn
+            try:
+                if "Name" in data[8]:
+                    gid = re.findall(r'Name=(.*)', data[8])[0].split(';')[0]
+                else:
+                    gid = re.findall(r'ID=(.*)', data[8])[0].split(';')[0]
+                hap_db[gid] = chrn
+            except IndexError:
+                continue
+
+        if not hap_db:
+            Message.error("No ID or Name found in %s" % hap_gff3)
+            exit(-1)
 
     Message.info("Loading allele table")
     allele_summary = {}
