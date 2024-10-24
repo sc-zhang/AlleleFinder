@@ -40,9 +40,10 @@ class GmapRunner(Runner):
         Message.info("\tEntering %s" % workdir)
         chdir(workdir)
 
-        if not DependChecker.check("gmap --version"):
+        dep_checker = DependChecker()
+        if not dep_checker.check("gmap --version"):
             Message.error("\tGMAP not found, Aborting...")
-            exit(-1)
+            dep_checker.exit_program_with_errors()
 
         if not path.exists("CpDB"):
             self._cmd = "gmap_build -D . -d CpDB %s" % ref_mono
@@ -76,9 +77,11 @@ class GmapRunner(Runner):
 class BlastRunner(Runner):
     def blast(self, ref_fasta, qry_fasta, db_name, evalue, out_blast, num_alignments, threads):
         if not path.exists(out_blast):
-            if not DependChecker.check("makeblastdb -version"):
+            dep_checker = DependChecker()
+            if not dep_checker.check("makeblastdb -version"):
                 Message.error("\tBlast not found, aborting...")
-                exit(-1)
+                dep_checker.exit_program_with_errors()
+
             Message.info("\tRunning blast")
             fa_type = FastaUtils.check_fasta_type(ref_fasta)
             self._cmd = "makeblastdb -in %s -dbtype %s -out %s" % (ref_fasta, fa_type, db_name)
@@ -114,9 +117,10 @@ class MCScanXRunner(Runner):
         Message.info("\tEntering %s" % out_dir)
         chdir(out_dir)
 
-        if not DependChecker.check("MCScanX -h"):
+        dep_checker = DependChecker()
+        if not dep_checker.check("MCScanX -h"):
             Message.error("\tMCScanX not found, aborting...")
-            exit(-1)
+            dep_checker.exit_program_with_errors()
 
         if not path.exists("xyz"):
             makedirs("xyz")
