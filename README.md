@@ -2,6 +2,10 @@
 
 This software is used for identifying allele genes from polyploid genome.
 
+## Overview
+![workflow](images/AlleleFinderWorkflow.png)
+
+
 ## Dependencies
 
 Software:
