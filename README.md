@@ -1,3 +1,6 @@
+# AlleleFinder: a tool for identifying allele genes from polyploid genome.
+
+[![DOI](https://zenodo.org/badge/284926541.svg)](https://doi.org/10.5281/zenodo.14015588)
 ## Introduction
 
 This software is used for identifying allele genes from polyploid genome.
