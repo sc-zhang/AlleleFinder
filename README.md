@@ -35,39 +35,20 @@ source ~/.bash_profile
 ### 1. main program
 
 ```bash
-usage: allelefinder.py [-h] {prepare,construct,stat,adjust} ...
+usage: allelefinder.py [-h] {construct,cleanup,stat,adjust} ...
 
 options:
   -h, --help            show this help message and exit
 
 Sub commands:
-  {prepare,construct,stat,adjust}
-    prepare             Remove same CDS from cds, pep and gff3 files
+  {construct,cleanup,stat,adjust}
     construct           Construct allele table
+    cleanup             Remove same CDS from cds, pep and gff3 files
     stat                Statistic allele table
     adjust              Adjust allele table with too many genes be marked as paralog
 ```
 
-### 2. prepare data
-
-If the genes with same CDS sequence, the "prepare" would deal with them and only one gene would be kept randomly.
-
-```bash
-usage: allelefinder.py prepare [-h] --in_cds IN_CDS [--in_pep IN_PEP] --in_gff3 IN_GFF3 --out_cds OUT_CDS [--out_pep OUT_PEP] --out_gff3 OUT_GFF3
-
-options:
-  -h, --help           show this help message and exit
-  --in_cds IN_CDS      Input CDS file
-  --in_pep IN_PEP      Input PEP file
-  --in_gff3 IN_GFF3    Input GFF3 file
-  --out_cds OUT_CDS    Output CDS file
-  --out_pep OUT_PEP    Output PEP file
-  --out_gff3 OUT_GFF3  Output GFF3 file
-```
-
-> **Notice:** CDS file and GFF3 file are required, PEP file is optional.
-
-### 3. construct allele table
+### 2. construct allele table
 
 #### Usage
 
@@ -136,6 +117,26 @@ options:
 ```
 
 ### 4. Additional
+* Cleanup sequence
+
+If user want to remove the duplicate genes with same CDS sequence, the "cleanup" would deal with them and only one gene would be kept randomly.
+
+```bash
+usage: allelefinder.py cleanup [-h] --in_cds IN_CDS [--in_pep IN_PEP] --in_gff3 IN_GFF3 --out_cds OUT_CDS [--out_pep OUT_PEP] --out_gff3 OUT_GFF3
+
+options:
+  -h, --help           show this help message and exit
+  --in_cds IN_CDS      Input CDS file
+  --in_pep IN_PEP      Input PEP file
+  --in_gff3 IN_GFF3    Input GFF3 file
+  --out_cds OUT_CDS    Output CDS file
+  --out_pep OUT_PEP    Output PEP file
+  --out_gff3 OUT_GFF3  Output GFF3 file
+```
+
+> **Notice:** CDS file and GFF3 file are required, PEP file is optional.
+
+* Adjust paralog genes
 
 If there are too many genes be marked with paralog, you can use command below to pull them down as new alleles
 

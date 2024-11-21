@@ -2,7 +2,7 @@ from allele_finder.utils.utils import FastaUtils, GFF3Utils
 from allele_finder.utils.message import Message
 
 
-def prepare_files(in_cds_file, in_pep_file, in_gff3_file, out_cds_file, out_pep_file, out_gff3_file):
+def cleanup_files(in_cds_file, in_pep_file, in_gff3_file, out_cds_file, out_pep_file, out_gff3_file):
     Message.info("Getting duplicate CDS")
     retain_db, dup_db = FastaUtils.get_full_same_seqs(in_cds_file)
     drop_set = set()
@@ -36,4 +36,4 @@ def main(args):
     out_cds_file = args.out_cds
     out_pep_file = args.out_pep
     out_gff3_file = args.out_gff3
-    prepare_files(in_cds_file, in_pep_file, in_gff3_file, out_cds_file, out_pep_file, out_gff3_file)
+    cleanup_files(in_cds_file, in_pep_file, in_gff3_file, out_cds_file, out_pep_file, out_gff3_file)
