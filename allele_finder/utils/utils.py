@@ -279,12 +279,17 @@ class AlleleUtils:
                 hap_db[gid] = [chrn, int(data[3])]
 
         flog.write("Loading tandem\n")
-        tandem_db = {}
+        tandem_set = set()
         with open(tandem, 'r') as fin:
             for line in fin:
                 data = line.strip().split(',')
+                chrn_set = set()
+                # tandem genes should in one chromosome
                 for gid in data:
-                    tandem_db[gid] = 1
+                    chrn_set.add(hap_db[gid][0])
+                if len(chrn_set) == 1:
+                    for gid in data:
+                        tandem_set.add(gid)
 
         flog.write("Formatting allele table\n")
         full_allele = []
@@ -335,7 +340,7 @@ class AlleleUtils:
                         if len(tmp_list) > 1:
                             for j in range(1, len(tmp_list)):
                                 pos, gid = tmp_list[j]
-                                if gid in tandem_db:
+                                if gid in tandem_set:
                                     tmp_ids.append(gid + "-T")
                                 else:
                                     tmp_ids.append(gid + "-P")
