@@ -414,8 +414,9 @@ class GmapUtils:
                 if sp > last_ep or last_ep - sp + 1 < ((cur_len + last_len) / 2.) * overlap_ratio:
                     alleles.append([])
                 alleles[-1].append(gene)
-            last_ep = ep
-            last_len = cur_len
+            if ep > last_ep:
+                last_ep = ep
+                last_len = cur_len
         return alleles
 
     @staticmethod
