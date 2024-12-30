@@ -401,27 +401,29 @@ class GmapUtils:
         return gff3_db, gene_order
 
     @staticmethod
-    def merge_allele(region_list):
+    def merge_allele(region_list, overlap_ratio):
         alleles = []
         last_ep = 0
+        last_len = 0
         for sp, ep, gene in sorted(region_list):
+            cur_len = ep - sp + 1
             if last_ep == 0:
                 alleles.append([])
                 alleles[-1].append(gene)
-                last_ep = ep
             else:
-                if sp > last_ep:
+                if sp > last_ep or last_ep - sp + 1 < ((cur_len + last_len) / 2.) * overlap_ratio:
                     alleles.append([])
                 alleles[-1].append(gene)
-                last_ep = ep
+            last_ep = ep
+            last_len = cur_len
         return alleles
 
     @staticmethod
-    def allele_gmap(gff3_db, threads):
+    def allele_gmap(gff3_db, overlap_ratio, threads):
         pool = multiprocessing.Pool(processes=threads)
         res = {}
         for chrn in gff3_db:
-            res[chrn] = pool.apply_async(GmapUtils.merge_allele, (gff3_db[chrn],))
+            res[chrn] = pool.apply_async(GmapUtils.merge_allele, (gff3_db[chrn], overlap_ratio,))
         pool.close()
         pool.join()
         allele_list = []

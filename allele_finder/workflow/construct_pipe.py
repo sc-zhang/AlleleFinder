@@ -15,6 +15,7 @@ def main(args):
     else:
         is_mono = False
     allele_count = args.num_allele
+    ovlp_ratio = args.ovlp_ratio
     blast_count = args.blast_count
     iden_thres = args.blast_identity
     te_file = args.TE
@@ -25,11 +26,11 @@ def main(args):
         te_filter_only_paralog = False
     wrkdir = args.workdir
     threads = args.threads
-    pipeline(ref, ref_cds, ref_gff3, cds, gff3, allele_count, is_mono, blast_count, iden_thres,
+    pipeline(ref, ref_cds, ref_gff3, cds, gff3, allele_count, is_mono, ovlp_ratio, blast_count, iden_thres,
              te_file, te_thres, te_filter_only_paralog, wrkdir, threads)
 
 
-def pipeline(ref, ref_cds, ref_gff3, cds, gff3, allele_count, is_mono, blast_count, iden_thres,
+def pipeline(ref, ref_cds, ref_gff3, cds, gff3, allele_count, is_mono, ovlp_ratio, blast_count, iden_thres,
              te_file, te_thres, te_filter_only_paralog, wrkdir, threads):
     if not path.exists(wrkdir):
         makedirs(wrkdir)
@@ -73,7 +74,7 @@ def pipeline(ref, ref_cds, ref_gff3, cds, gff3, allele_count, is_mono, blast_cou
 
         Message.info("\tLoading GMAP result")
         gff3_db, gene_order = GmapUtils.read_gff3(gmap_res)
-        gff3_allele = GmapUtils.allele_gmap(gff3_db, threads)
+        gff3_allele = GmapUtils.allele_gmap(gff3_db, ovlp_ratio, threads)
         base_allele.extend(gff3_allele)
 
         Message.info("\tWriting allele list backbone")
