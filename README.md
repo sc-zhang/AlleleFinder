@@ -1,13 +1,14 @@
 # AlleleFinder: a tool for identifying allele genes from polyploid genome.
 
 [![DOI](https://zenodo.org/badge/284926541.svg)](https://doi.org/10.5281/zenodo.14015588)
+
 ## Introduction
 
 This software is used for identifying allele genes from polyploid genome.
 
 ## Overview
-![workflow](images/AlleleFinderWorkflow.png)
 
+![workflow](images/AlleleFinderWorkflow.png)
 
 ## Dependencies
 
@@ -53,7 +54,7 @@ Sub commands:
 #### Usage
 
 ```bash
-usage: allelefinder.py construct [-h] -r REF -d REF_CDS -f REF_GFF3 -c CDS -g GFF3 -n NUM_ALLELE [-m] [-b BLAST_COUNT] [-i BLAST_IDENTITY] [-e TE] [-j TE_OVERLAP] [--paralog_only] [-w WORKDIR] [-t THREADS]
+usage: allelefinder.py construct [-h] -r REF -d REF_CDS -f REF_GFF3 -c CDS -g GFF3 -n NUM_ALLELE [-m] [--ovlp_ratio OVLP_RATIO] [-b BLAST_COUNT] [--blast_identity BLAST_IDENTITY] [-e TE] [-j TE_OVERLAP] [--paralog_only] [-w WORKDIR] [-t THREADS]
 
 options:
   -h, --help            show this help message and exit
@@ -67,9 +68,11 @@ options:
   -n NUM_ALLELE, --num_allele NUM_ALLELE
                         number of allele
   -m, --is_mono         if your reference fasta is mono assembly of polyploid, add this argument
+  --ovlp_ratio OVLP_RATIO
+                        threshold of gene pair overlap regions identified by GMAP, default: 0.8
   -b BLAST_COUNT, --blast_count BLAST_COUNT
                         blast count, default: 2
-  -i BLAST_IDENTITY, --blast_identity BLAST_IDENTITY
+  --blast_identity BLAST_IDENTITY
                         threshold of blast identity, default: 80
   -e TE, --TE TE        TE gff3 for filtering, default: ""
   -j TE_OVERLAP, --TE_overlap TE_OVERLAP
@@ -117,9 +120,11 @@ options:
 ```
 
 ### 4. Additional
+
 * Cleanup sequence
 
-If user want to remove the duplicate genes with same CDS sequence, the "cleanup" would deal with them and only one gene would be kept randomly.
+If user want to remove the duplicate genes with same CDS sequence, the "cleanup" would deal with them and only one gene
+would be kept randomly.
 
 ```bash
 usage: allelefinder.py cleanup [-h] --in_cds IN_CDS [--in_pep IN_PEP] --in_gff3 IN_GFF3 --out_cds OUT_CDS [--out_pep OUT_PEP] --out_gff3 OUT_GFF3
