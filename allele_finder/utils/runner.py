@@ -14,13 +14,13 @@ class Runner:
         self._err = ""
 
     def set_command(self, cmd):
-        self._cmd = "\"%s\"" % cmd
+        self._cmd = '"%s"' % cmd
 
     def print_command(self):
         Message.info(self._cmd)
 
     def run(self):
-        p = Popen(self._cmd, stdout=PIPE, stderr=PIPE, shell=True, encoding='utf-8')
+        p = Popen(self._cmd, stdout=PIPE, stderr=PIPE, shell=True, encoding="utf-8")
         self._res, self._err = p.communicate()
 
     def get_result(self):
@@ -57,10 +57,18 @@ class GmapRunner(Runner):
 
         if not path.exists("gmap.gff3"):
             fs = path.getsize(ref_mono)
-            if fs >= 2 ** 32:
-                self._cmd = "gmapl -D . -d CpDB -f 2 -n %d -t %d %s > gmap.gff3" % (allele_cnt, threads, qry_cds)
+            if fs >= 2**32:
+                self._cmd = "gmapl -D . -d CpDB -f 2 -n %d -t %d %s > gmap.gff3" % (
+                    allele_cnt,
+                    threads,
+                    qry_cds,
+                )
             else:
-                self._cmd = "gmap -D . -d CpDB -f 2 -n %d -t %d %s > gmap.gff3" % (allele_cnt, threads, qry_cds)
+                self._cmd = "gmap -D . -d CpDB -f 2 -n %d -t %d %s > gmap.gff3" % (
+                    allele_cnt,
+                    threads,
+                    qry_cds,
+                )
 
             Message.info("\tRunning command: %s" % self._cmd)
             self.run()
@@ -75,7 +83,9 @@ class GmapRunner(Runner):
 
 
 class BlastRunner(Runner):
-    def blast(self, ref_fasta, qry_fasta, db_name, evalue, out_blast, num_alignments, threads):
+    def blast(
+        self, ref_fasta, qry_fasta, db_name, evalue, out_blast, num_alignments, threads
+    ):
         if not path.exists(out_blast):
             dep_checker = DependChecker()
             if not dep_checker.check("makeblastdb -version"):
@@ -84,20 +94,33 @@ class BlastRunner(Runner):
 
             Message.info("\tRunning blast")
             fa_type = FastaUtils.check_fasta_type(ref_fasta)
-            self._cmd = "makeblastdb -in %s -dbtype %s -out %s" % (ref_fasta, fa_type, db_name)
+            self._cmd = "makeblastdb -in %s -dbtype %s -out %s" % (
+                ref_fasta,
+                fa_type,
+                db_name,
+            )
             Message.info("\tRunning command: %s" % self._cmd)
             self.run()
-            with open("makeblastdb.log", 'a') as fout:
+            with open("makeblastdb.log", "a") as fout:
                 fout.write("%s\n" % self._res)
                 fout.write("%s\n" % self._err)
 
             blast_program = "blastn" if fa_type == "nucl" else "blastp"
-            self._cmd = ("%s -query %s -db %s -out %s -evalue %s -outfmt 6 -num_alignments %d "
-                         "-num_threads %d") % (
-                            blast_program, qry_fasta, db_name, out_blast, evalue, num_alignments, threads)
+            self._cmd = (
+                "%s -query %s -db %s -out %s -evalue %s -outfmt 6 -num_alignments %d "
+                "-num_threads %d"
+            ) % (
+                blast_program,
+                qry_fasta,
+                db_name,
+                out_blast,
+                evalue,
+                num_alignments,
+                threads,
+            )
             Message.info("\tRunning command: %s" % self._cmd)
             self.run()
-            with open("blast.log", 'a') as fout:
+            with open("blast.log", "a") as fout:
                 fout.write("%s\n" % self._res)
                 fout.write("%s\n" % self._err)
         else:
@@ -129,19 +152,23 @@ class MCScanXRunner(Runner):
         if not path.exists("xyz/xyz.gff"):
             Message.info("\tLoading gff3")
             gff3_db = {}
-            with open(in_gff3, 'r') as fin:
+            with open(in_gff3, "r") as fin:
                 for line in fin:
-                    if line.strip() == '' or line[0] == '#':
+                    if line.strip() == "" or line[0] == "#":
                         continue
                     data = line.strip().split()
-                    chrn = re.findall(r'([A-Za-z]+\d+)', data[0])[0]
-                    if 'tig' in chrn or 'ctg' in chrn:
+                    if "tig" in chrn or "ctg" in chrn:
                         continue
-                    if data[2] == 'gene':
+                    chrn = re.findall(r"([A-Za-z]+\d+)", data[0])
+                    if chrn:
+                        chrn = chrn[0]
+                    else:
+                        continue
+                    if data[2] == "gene":
                         if "Name" in data[8]:
-                            gid = re.findall(r'Name=(.*)', data[8])[0].split(';')[0]
+                            gid = re.findall(r"Name=(.*)", data[8])[0].split(";")[0]
                         else:
-                            gid = re.findall(r'ID=(.*)', data[8])[0].split(';')[0]
+                            gid = re.findall(r"ID=(.*)", data[8])[0].split(";")[0]
 
                         if chrn not in gff3_db:
                             gff3_db[chrn] = []
@@ -150,7 +177,7 @@ class MCScanXRunner(Runner):
 
             Message.info("\tWriting gff")
             idx = 1
-            with open(path.join("xyz/xyz.gff"), 'w') as fout:
+            with open(path.join("xyz/xyz.gff"), "w") as fout:
                 for chrn in sorted(gff3_db):
                     spid = "NN%02d" % idx
                     idx += 1
@@ -158,26 +185,36 @@ class MCScanXRunner(Runner):
                         fout.write("%s\t%s\t%d\t%d\n" % (spid, gid, sp, ep))
         else:
             Message.info("\tGFF file found, skipping...")
-            with open(path.join("xyz/xyz.gff"), 'r') as fin:
+            with open(path.join("xyz/xyz.gff"), "r") as fin:
                 for line in fin:
                     gff_id_set.add(line.strip().split()[1])
 
         cds_id_set = FastaUtils.get_seq_ids(in_fa)
-        match_ratio = len(cds_id_set.intersection(gff_id_set)) * 1. / min(len(cds_id_set), len(gff_id_set))
+        match_ratio = (
+            len(cds_id_set.intersection(gff_id_set))
+            * 1.0
+            / min(len(cds_id_set), len(gff_id_set))
+        )
 
         if match_ratio < 0.5:
-            Message.error("\tFatal error: Critical low match ratio %.2f%% between gff3 file and CDS file, "
-                          "please check input files!" % (match_ratio * 100))
-            Message.error("\tID in gff file: %s, ID in CDS file: %s" % (sorted(gff_id_set)[0], sorted(cds_id_set)[0]))
-            Message.error("\tGene ID in gff3 file are extracted with \"Name\" feature if exists, otherwise \"ID\" "
-                          "feature would be extracted, please check these features with CDS file")
+            Message.error(
+                "\tFatal error: Critical low match ratio %.2f%% between gff3 file and CDS file, "
+                "please check input files!" % (match_ratio * 100)
+            )
+            Message.error(
+                "\tID in gff file: %s, ID in CDS file: %s"
+                % (sorted(gff_id_set)[0], sorted(cds_id_set)[0])
+            )
+            Message.error(
+                '\tGene ID in gff3 file are extracted with "Name" feature if exists, otherwise "ID" '
+                "feature would be extracted, please check these features with CDS file"
+            )
             exit(-1)
 
         if not path.exists("xyz/xyz.blast"):
             Message.info("\tRunning blast")
             blaster = BlastRunner()
-            blaster.blast(in_fa, in_fa, "blastdb", "1e-10",
-                          "xyz/xyz.blast", 5, threads)
+            blaster.blast(in_fa, in_fa, "blastdb", "1e-10", "xyz/xyz.blast", 5, threads)
         else:
             Message.info("Blast file found, skipping...")
 
@@ -185,7 +222,7 @@ class MCScanXRunner(Runner):
         Message.info("\tRunning command: %s" % self._cmd)
         self.run()
 
-        with open("mcscanx.log", 'w') as fout:
+        with open("mcscanx.log", "w") as fout:
             fout.write("%s\n" % self._res)
             fout.write("%s\n" % self._err)
         Message.info("\tMCScanX finished")
