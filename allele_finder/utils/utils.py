@@ -384,7 +384,11 @@ class GmapUtils:
                 data = line.strip().split()
                 if data[0][:3].lower() in drop_pre_set:
                     continue
-                chrn = re.findall(r'([A-Za-z]+\d+).*', data[0])[0]
+                chrn = re.findall(r'([A-Za-z]+\d+).*', data[0])
+                if chrn:
+                    chrn = chrn[0]
+                else:
+                    continue
                 feature_type = data[2]
                 if feature_type != 'gene':
                     continue
