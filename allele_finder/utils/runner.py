@@ -57,7 +57,7 @@ class GmapRunner(Runner):
 
         if not path.exists("gmap.gff3"):
             fs = path.getsize(ref_mono)
-            if fs >= 2**32:
+            if fs >= 2 ** 32:
                 self._cmd = "gmapl -D . -d CpDB -f 2 -n %d -t %d %s > gmap.gff3" % (
                     allele_cnt,
                     threads,
@@ -84,7 +84,7 @@ class GmapRunner(Runner):
 
 class BlastRunner(Runner):
     def blast(
-        self, ref_fasta, qry_fasta, db_name, evalue, out_blast, num_alignments, threads
+            self, ref_fasta, qry_fasta, db_name, evalue, out_blast, num_alignments, threads
     ):
         if not path.exists(out_blast):
             dep_checker = DependChecker()
@@ -107,17 +107,17 @@ class BlastRunner(Runner):
 
             blast_program = "blastn" if fa_type == "nucl" else "blastp"
             self._cmd = (
-                "%s -query %s -db %s -out %s -evalue %s -outfmt 6 -num_alignments %d "
-                "-num_threads %d"
-            ) % (
-                blast_program,
-                qry_fasta,
-                db_name,
-                out_blast,
-                evalue,
-                num_alignments,
-                threads,
-            )
+                            "%s -query %s -db %s -out %s -evalue %s -outfmt 6 -num_alignments %d "
+                            "-num_threads %d"
+                        ) % (
+                            blast_program,
+                            qry_fasta,
+                            db_name,
+                            out_blast,
+                            evalue,
+                            num_alignments,
+                            threads,
+                        )
             Message.info("\tRunning command: %s" % self._cmd)
             self.run()
             with open("blast.log", "a") as fout:
@@ -157,7 +157,7 @@ class MCScanXRunner(Runner):
                     if line.strip() == "" or line[0] == "#":
                         continue
                     data = line.strip().split()
-                    if "tig" in chrn or "ctg" in chrn:
+                    if "tig" in data[0] or "ctg" in data[0]:
                         continue
                     chrn = re.findall(r"([A-Za-z]+\d+)", data[0])
                     if chrn:
@@ -191,9 +191,9 @@ class MCScanXRunner(Runner):
 
         cds_id_set = FastaUtils.get_seq_ids(in_fa)
         match_ratio = (
-            len(cds_id_set.intersection(gff_id_set))
-            * 1.0
-            / min(len(cds_id_set), len(gff_id_set))
+                len(cds_id_set.intersection(gff_id_set))
+                * 1.0
+                / min(len(cds_id_set), len(gff_id_set))
         )
 
         if match_ratio < 0.5:
