@@ -23,10 +23,15 @@ Software:
 ## Installation
 
 ```bash
+# Clone repository
 cd /path/to/install
 git clone https://github.com/sc-zhang/AlleleFinder.git
 chmod +x AlleleFinder/allelefinder.py
-# Optional
+
+# Optional, create environment with conda
+conda create -f environment.yaml
+
+# Optional, add to PATH environment variable
 echo 'export PATH=/path/to/install/AlleleFinder:$PATH' >> ~/.bash_profile
 source ~/.bash_profile
 ```
