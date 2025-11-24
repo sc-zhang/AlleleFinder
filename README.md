@@ -18,7 +18,7 @@ Software:
 - [GMAP](http://research-pub.gene.com/gmap/)
 - [NCBI BLAST+](https://ftp.ncbi.nlm.nih.gov/blast/executables/blast+/LATEST/)
 
-> **Notice:** these software should be added to the <kbd>PATH</kbd> Environment Variable.
+> **Notice:** these software should be added to the <kbd>PATH</kbd> Environment Variable or create an environment use conda with environment.yaml.
 
 ## Installation
 
@@ -30,6 +30,7 @@ chmod +x AlleleFinder/allelefinder.py
 
 # Optional, create environment with conda
 conda env create -f environment.yaml
+conda activate allelefinder_env
 
 # Optional, add to PATH environment variable
 echo 'export PATH=/path/to/install/AlleleFinder:$PATH' >> ~/.bash_profile
