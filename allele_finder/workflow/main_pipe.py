@@ -119,6 +119,5 @@ def main():
     try:
         args = parser.parse_args()
         args.func(args)
-    except AttributeError as e:
-        print(e)
+    except AttributeError:
         parser.print_help()
