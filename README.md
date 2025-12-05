@@ -18,7 +18,8 @@ Software:
 - [GMAP](http://research-pub.gene.com/gmap/)
 - [NCBI BLAST+](https://ftp.ncbi.nlm.nih.gov/blast/executables/blast+/LATEST/)
 
-> **Notice:** these software should be added to the <kbd>PATH</kbd> Environment Variable or create an environment use conda with environment.yaml.
+> **Notice:** these software should be added to the <kbd>PATH</kbd> Environment Variable or create an environment use
+> conda with environment.yaml.
 
 ## Installation
 
@@ -42,10 +43,11 @@ source ~/.bash_profile
 ### 1. main program
 
 ```bash
-usage: allelefinder.py [-h] {construct,cleanup,stat,adjust} ...
+usage: allelefinder.py [-h] [-v] {construct,cleanup,stat,adjust} ...
 
 options:
   -h, --help            show this help message and exit
+  -v, --version         show program's version number and exit
 
 Sub commands:
   {construct,cleanup,stat,adjust}
