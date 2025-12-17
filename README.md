@@ -62,33 +62,33 @@ Sub commands:
 #### Usage
 
 ```bash
-usage: allelefinder.py construct [-h] -r REF -d REF_CDS -f REF_GFF3 -c CDS -g GFF3 -n NUM_ALLELE [-m] [--ovlp_ratio OVLP_RATIO] [-b BLAST_COUNT] [--blast_identity BLAST_IDENTITY] [-e TE] [-j TE_OVERLAP] [--paralog_only] [-w WORKDIR] [-t THREADS]
+usage: allelefinder.py construct [-h] -r REF -d REF_CDS -f REF_GFF3 -c CDS -g GFF3 -n NUM_ALLELE [-m] [--ovlp_ratio OVLP_RATIO] [-b BLAST_ROUND] [--blast_threshold BLAST_THRESHOLD] [-e TE] [-j TE_OVERLAP] [--paralog_only] [-w WORKDIR] [-t THREADS]
 
 options:
   -h, --help            show this help message and exit
-  -r REF, --ref REF     reference fasta
-  -d REF_CDS, --ref_cds REF_CDS
+  -r, --ref REF         reference fasta
+  -d, --ref_cds REF_CDS
                         CDS fasta of ref
-  -f REF_GFF3, --ref_gff3 REF_GFF3
+  -f, --ref_gff3 REF_GFF3
                         GFF3 file of ref
-  -c CDS, --cds CDS     CDS fasta of polyploid
-  -g GFF3, --gff3 GFF3  GFF3 file of polyploid
-  -n NUM_ALLELE, --num_allele NUM_ALLELE
+  -c, --cds CDS         CDS fasta of polyploid
+  -g, --gff3 GFF3       GFF3 file of polyploid
+  -n, --num_allele NUM_ALLELE
                         number of allele
   -m, --is_mono         if your reference fasta is mono assembly of polyploid, add this argument
   --ovlp_ratio OVLP_RATIO
-                        threshold of gene pair overlap regions identified by GMAP, default: 0.8
-  -b BLAST_COUNT, --blast_count BLAST_COUNT
-                        blast count, default: 2
-  --blast_identity BLAST_IDENTITY
-                        threshold of blast identity, default: 80
-  -e TE, --TE TE        TE gff3 for filtering, default: ""
-  -j TE_OVERLAP, --TE_overlap TE_OVERLAP
+                        threshold of gene pair coordinate overlap identified by GMAP, default: 0.8
+  -b, --blast_round BLAST_ROUND
+                        blast round, default: 2
+  --blast_threshold BLAST_THRESHOLD
+                        threshold of blast result which defined as matches*2/(query_length+reference_length), default: 0.8
+  -e, --TE TE           TE gff3 for filtering, default: ""
+  -j, --TE_overlap TE_OVERLAP
                         threshold of TE overlap, default: 0.3, only effect when TE is not NULL
   --paralog_only        do TE filter only on paralog genes
-  -w WORKDIR, --workdir WORKDIR
+  -w, --workdir WORKDIR
                         workdir, default: wrkdir
-  -t THREADS, --threads THREADS
+  -t, --threads THREADS
                         threads, default: 12
 ```
 
@@ -131,11 +131,12 @@ options:
 
 * Cleanup sequence
 
-If user want to remove the duplicate genes with same CDS sequence, the "cleanup" would deal with them and only one gene
+If user want to remove the duplicate genes with same CDS/PEP sequence, the "cleanup" would deal with them and only one
+gene
 would be kept randomly.
 
 ```bash
-usage: allelefinder.py cleanup [-h] --in_cds IN_CDS [--in_pep IN_PEP] --in_gff3 IN_GFF3 --out_cds OUT_CDS [--out_pep OUT_PEP] --out_gff3 OUT_GFF3
+usage: allelefinder.py cleanup [-h] [--in_cds IN_CDS] [--in_pep IN_PEP] --in_gff3 IN_GFF3 [--out_cds OUT_CDS] [--out_pep OUT_PEP] --out_gff3 OUT_GFF3 [--by_pep]
 
 options:
   -h, --help           show this help message and exit
@@ -145,6 +146,7 @@ options:
   --out_cds OUT_CDS    Output CDS file
   --out_pep OUT_PEP    Output PEP file
   --out_gff3 OUT_GFF3  Output GFF3 file
+  --by_pep             filter by PEP sequences
 ```
 
 > **Notice:** CDS file and GFF3 file are required, PEP file is optional.
