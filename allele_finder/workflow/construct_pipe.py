@@ -16,8 +16,8 @@ def main(args):
         is_mono = False
     allele_count = args.num_allele
     ovlp_ratio = args.ovlp_ratio
-    blast_count = args.blast_count
-    iden_thres = args.blast_identity
+    blast_round = args.blast_round
+    blast_threshold = args.blast_threshold
     te_file = args.TE
     te_thres = args.TE_overlap
     if args.paralog_only:
@@ -26,11 +26,11 @@ def main(args):
         te_filter_only_paralog = False
     wrkdir = args.workdir
     threads = args.threads
-    pipeline(ref, ref_cds, ref_gff3, cds, gff3, allele_count, is_mono, ovlp_ratio, blast_count, iden_thres,
+    pipeline(ref, ref_cds, ref_gff3, cds, gff3, allele_count, is_mono, ovlp_ratio, blast_round, blast_threshold,
              te_file, te_thres, te_filter_only_paralog, wrkdir, threads)
 
 
-def pipeline(ref, ref_cds, ref_gff3, cds, gff3, allele_count, is_mono, ovlp_ratio, blast_count, iden_thres,
+def pipeline(ref, ref_cds, ref_gff3, cds, gff3, allele_count, is_mono, ovlp_ratio, blast_count, blast_threshold,
              te_file, te_thres, te_filter_only_paralog, wrkdir, threads):
     if not path.exists(wrkdir):
         makedirs(wrkdir)
@@ -102,6 +102,7 @@ def pipeline(ref, ref_cds, ref_gff3, cds, gff3, allele_count, is_mono, ovlp_rati
     Message.info("\tEntering: blast")
     chdir("03.blast")
 
+    hap_cds_len_db = FastaUtils.get_seq_length(cds)
     for i in range(0, blast_count):
         Message.info("\tStarting iteration %02d" % (i + 1))
         outpre = "iter%02d" % (i + 1)
@@ -117,7 +118,7 @@ def pipeline(ref, ref_cds, ref_gff3, cds, gff3, allele_count, is_mono, ovlp_rati
             blaster.blast(multi_fa, single_fa, outpre + "db", "1e-3", out_blast, 1, threads)
         else:
             Message.info("\tIter %02d, blast file found, skipping..." % (i + 1))
-        final_allele.extend(BlastUtils.allele_blast(out_blast, iden_thres))
+        final_allele.extend(BlastUtils.allele_blast(out_blast, hap_cds_len_db, blast_threshold))
         final_allele = AlleleUtils.merge_allele(final_allele)
         backbone = outpre + ".csv"
         if not path.exists(backbone):
@@ -155,8 +156,11 @@ def pipeline(ref, ref_cds, ref_gff3, cds, gff3, allele_count, is_mono, ovlp_rati
     chdir(curdir)
 
     allele_file = "allele.adjusted.txt"
+    ref_cds_len_db = FastaUtils.get_seq_length(ref_cds)
     if not path.exists(allele_file):
-        AlleleUtils.adjust_allele_table("allele.csv", ref_gff3, gff3, out_blast, hap_blast_file, iden_thres,
+        AlleleUtils.adjust_allele_table("allele.csv",
+                                        ref_gff3, ref_cds_len_db, gff3, hap_cds_len_db,
+                                        out_blast, hap_blast_file, blast_threshold,
                                         tandem_file, allele_count, allele_file, is_mono, "04.ref_adjust.log")
     else:
         Message.info("\tallele.adjusted.txt found, skipping...")

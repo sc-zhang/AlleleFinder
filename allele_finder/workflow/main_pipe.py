@@ -45,13 +45,13 @@ def main():
         default=0.8,
     )
     parser_construct.add_argument(
-        "-b", "--blast_count", help="blast count, default: 2", type=int, default=2
+        "-b", "--blast_round", help="blast round, default: 2", type=int, default=2
     )
     parser_construct.add_argument(
-        "--blast_identity",
-        help="threshold of blast identity, default: 80",
+        "--blast_threshold",
+        help="threshold of blast result which defined as matches*2/(query_length+reference_length), default: 0.8",
         type=float,
-        default=80,
+        default=0.8,
     )
     parser_construct.add_argument(
         "-e", "--TE", help='TE gff3 for filtering, default: ""', default=""
@@ -75,14 +75,15 @@ def main():
     parser_construct.set_defaults(func=allele_finder.workflow.construct_pipe.main)
 
     parser_cleanup = subparsers.add_parser(
-        "cleanup", help="Remove same CDS from cds, pep and gff3 files"
+        "cleanup", help="Remove duplicated sequences from cds, pep and gff3 files"
     )
-    parser_cleanup.add_argument("--in_cds", help="Input CDS file", required=True)
+    parser_cleanup.add_argument("--in_cds", help="Input CDS file")
     parser_cleanup.add_argument("--in_pep", help="Input PEP file")
     parser_cleanup.add_argument("--in_gff3", help="Input GFF3 file", required=True)
-    parser_cleanup.add_argument("--out_cds", help="Output CDS file", required=True)
+    parser_cleanup.add_argument("--out_cds", help="Output CDS file")
     parser_cleanup.add_argument("--out_pep", help="Output PEP file")
     parser_cleanup.add_argument("--out_gff3", help="Output GFF3 file", required=True)
+    parser_cleanup.add_argument("--by_pep", help="filter by PEP sequences", action="store_true")
     parser_cleanup.set_defaults(func=allele_finder.workflow.cleanup_pipe.main)
 
     parser_statistic = subparsers.add_parser("stat", help="Statistic allele table")

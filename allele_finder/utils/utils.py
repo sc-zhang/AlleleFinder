@@ -127,10 +127,23 @@ class FastaUtils:
             for gid in multi_list:
                 fout.write(">%s\n%s\n" % (gid, fa_db[gid]))
 
+    @staticmethod
+    def get_seq_length(in_fasta):
+        seq_len_db = {}
+        with open(in_fasta, 'r') as fin:
+            for line in fin:
+                if line[0] == '>':
+                    gid = line.strip().split()[0][1:]
+                    seq_len_db[gid] = 0
+                else:
+                    seq_len_db[gid] += len(line.strip())
+
+        return seq_len_db
+
 
 class BlastUtils:
     @staticmethod
-    def allele_blast(in_blast, iden):
+    def allele_blast(in_blast, cds_len_db, threshold):
         allele_list = []
         used_genes = {}
         with open(in_blast, 'r') as fin:
@@ -138,7 +151,11 @@ class BlastUtils:
                 data = line.strip().split()
                 qry = data[0]
                 target = data[1]
-                if float(data[2]) < iden:
+                qry_len = cds_len_db[qry]
+                target_len = cds_len_db[target]
+                match = float(data[2]) / 100. * float(data[3])
+                cur_iden = match * 2. / (qry_len + target_len)
+                if cur_iden < threshold:
                     continue
                 if qry not in used_genes:
                     used_genes[qry] = 1
@@ -220,7 +237,8 @@ class AlleleUtils:
         return allele_list
 
     @staticmethod
-    def adjust_allele_table(in_allele, ref_gff3, hap_gff3, ref_blast, hap_blast, iden, tandem, allele_num, out_allele,
+    def adjust_allele_table(in_allele, ref_gff3, ref_cds_len_db, hap_gff3, hap_cds_len_db,
+                            ref_blast, hap_blast, blast_threshold, tandem, allele_num, out_allele,
                             is_mono, log_file):
         flog = open(log_file, 'w')
         flog.write("Loading ref blast\n")
@@ -230,14 +248,14 @@ class AlleleUtils:
                 data = line.strip().split()
                 hap_gn = data[0]
                 ref_gn = data[1]
-                bi = float(data[2])
-                if bi < iden:
+                hap_len = hap_cds_len_db[hap_gn]
+                ref_len = ref_cds_len_db[ref_gn]
+                match = float(data[2]) / 100. * float(data[3])
+                cur_iden = match * 2. / (hap_len + ref_len)
+                if cur_iden < blast_threshold:
                     continue
-                bs = data[-1]
-                if hap_gn not in ref_blast_db:
-                    ref_blast_db[hap_gn] = [ref_gn, bs]
-                if bs > ref_blast_db[hap_gn][-1]:
-                    ref_blast_db[hap_gn] = [ref_gn, bs]
+                if hap_gn not in ref_blast_db or cur_iden > ref_blast_db[hap_gn][1]:
+                    ref_blast_db[hap_gn] = [ref_gn, cur_iden]
 
         flog.write("Loading hap blast\n")
         hap_blast_db = {}
@@ -246,12 +264,13 @@ class AlleleUtils:
                 data = line.strip().split()
                 gn1 = data[0]
                 gn2 = data[1]
-                bi = float(data[2])
-                if gn1 != gn2 and bi >= iden:
-                    if gn1 not in hap_blast_db:
-                        hap_blast_db[gn1] = [gn2, bi]
-                    elif bi > hap_blast_db[gn1][1]:
-                        hap_blast_db[gn1] = [gn2, bi]
+                glen1 = hap_cds_len_db[gn1]
+                glen2 = hap_cds_len_db[gn2]
+                match = float(data[2]) / 100. * float(data[3])
+                cur_iden = match * 2. / (glen1 + glen2)
+                if gn1 != gn2 and cur_iden >= blast_threshold:
+                    if gn1 not in hap_blast_db or cur_iden > hap_blast_db[gn1][1]:
+                        hap_blast_db[gn1] = [gn2, cur_iden]
 
         flog.write("Loading ref gff3\n")
         ref_db = {"NA": ["NA", "NA"]}
