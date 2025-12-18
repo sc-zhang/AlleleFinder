@@ -398,7 +398,13 @@ class AlleleUtils:
                         if gid not in hap_blast_db:
                             ref_id = "NA"
                         else:
-                            ref_id = hap_blast_db[gid][0]
+                            check_ids = set()
+                            while gid not in check_ids:
+                                ref_id = hap_blast_db[gid][0]
+                                check_ids.add(gid)
+                                gid = ref_id
+                                if ref_id in ref_blast_db:
+                                    break
                     else:
                         ref_id = gid
                     if ref_id not in ref_blast_db or ref_id not in candidate_allele_genes:
