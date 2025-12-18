@@ -69,16 +69,13 @@ class FastaUtils:
 
     @staticmethod
     def check_fasta_type(fasta_file):
-        fasta_type = ""
+        fasta_type = "nucl"
         with open(fasta_file, 'r') as fin:
             for line in fin:
-                if line[0] == ">":
+                if line.strip() == "" or line[0] == '>':
                     continue
                 if "M" in line.upper():
                     fasta_type = "prot"
-                else:
-                    fasta_type = "nucl"
-                break
         return fasta_type
 
     @staticmethod
@@ -268,11 +265,13 @@ class AlleleUtils:
         return allele_list
 
     @staticmethod
-    def get_best_query_matched_ref(in_blast, qry_cds_len_db, ref_cds_len_db):
+    def get_best_query_matched_ref(in_blast, qry_cds_len_db, ref_cds_len_db, threshold=0.8):
         qry_best_db = {}
         with open(in_blast, 'r') as fin:
             for line in fin:
                 qry, ref, cur_iden = BlastUtils.calc_adjust_iden(line.strip().split(), qry_cds_len_db, ref_cds_len_db)
+                if cur_iden < threshold:
+                    continue
                 if qry not in qry_best_db or cur_iden > qry_best_db[qry][1]:
                     qry_best_db[qry] = [ref, cur_iden]
         return qry_best_db
