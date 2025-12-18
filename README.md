@@ -23,12 +23,28 @@ Software:
 
 ## Installation
 
+- Install latest release
+
 ```bash
-# Clone repository
+# Download latest release
+cd /path/to/install
+wget https://github.com/sc-zhang/AlleleFinder/archive/refs/tags/V1.2.1.tar.gz
+tar zxvf V1.2.1.tar.gz
+chmod +x AlleleFinder-1.2.1/allelefinder.py
+```
+
+- Install development version
+
+```bash
+# Clone development repository
 cd /path/to/install
 git clone https://github.com/sc-zhang/AlleleFinder.git
 chmod +x AlleleFinder/allelefinder.py
+```
 
+- Optional
+
+```bash
 # Optional, create environment with conda
 conda env create -f environment.yaml
 conda activate allelefinder_env
