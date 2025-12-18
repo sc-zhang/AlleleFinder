@@ -49,7 +49,7 @@ def main():
     )
     parser_construct.add_argument(
         "--blast_threshold",
-        help="threshold of blast result which defined as matches*2/(query_length+reference_length), default: 0.8",
+        help="threshold of blast result which was defined as matches*2/(query_length+reference_length), default: 0.8",
         type=float,
         default=0.8,
     )

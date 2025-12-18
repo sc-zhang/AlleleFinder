@@ -87,6 +87,7 @@ def pipeline(ref, ref_cds, ref_gff3, cds, gff3, allele_count, is_mono,
         gff3_db, gene_order = GmapUtils.read_gff3(gff3)
         base_allele = AlleleUtils.split_allele(base_allele, gene_order)
         base_allele = AlleleUtils.merge_allele(base_allele)
+
         with open("backbone.csv", 'w') as fout:
             for allele in sorted(base_allele):
                 fout.write("%s\n" % (",".join(sorted(allele))))

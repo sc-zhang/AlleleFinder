@@ -153,6 +153,24 @@ class BlastUtils:
         return qry, ref, adjust_identity
 
     @staticmethod
+    def get_self_blast_adjust_iden(in_blast, cds_len_db):
+        adjust_iden_db = {}
+        with open(in_blast, 'r') as fin:
+            for line in fin:
+                qry, ref, cur_iden = BlastUtils.calc_adjust_iden(line.strip().split(), cds_len_db, cds_len_db)
+                if qry == ref:
+                    continue
+                if qry not in adjust_iden_db:
+                    adjust_iden_db[qry] = {}
+                if ref not in adjust_iden_db:
+                    adjust_iden_db[ref] = {}
+                if ref not in adjust_iden_db[qry] or cur_iden > adjust_iden_db[qry][ref]:
+                    adjust_iden_db[qry][ref] = cur_iden
+                if qry not in adjust_iden_db[ref] or cur_iden > adjust_iden_db[ref][qry]:
+                    adjust_iden_db[ref][qry] = cur_iden
+        return adjust_iden_db
+
+    @staticmethod
     def get_reciprocal_blast_db(in_blast, qry_cds_len_db, ref_cds_len_db):
         ref_best_db = {}
         qry_best_db = {}
@@ -173,13 +191,12 @@ class BlastUtils:
     @staticmethod
     def allele_blast(in_blast, cds_len_db, threshold, is_reciprocal=False):
         allele_list = []
-        used_genes = set()
         if is_reciprocal:
             reciprocal_blast_db = BlastUtils.get_reciprocal_blast_db(in_blast, cds_len_db, cds_len_db)
             for qry in reciprocal_blast_db:
-                if qry not in used_genes:
-                    allele_list.append([qry, reciprocal_blast_db[qry]])
+                allele_list.append([qry, reciprocal_blast_db[qry]])
         else:
+            used_genes = set()
             with open(in_blast, 'r') as fin:
                 for line in fin:
                     qry, ref, cur_iden = BlastUtils.calc_adjust_iden(line.strip().split(), cds_len_db, cds_len_db)
@@ -189,6 +206,23 @@ class BlastUtils:
                         used_genes.add(qry)
                         allele_list.append([qry, ref])
         return allele_list
+
+
+class UnionFind:
+    def __init__(self, size):
+        self.__f = [i for i in range(size)]
+
+    def find(self, x):
+        if self.__f[x] == x:
+            return x
+        self.__f[x] = self.find(self.__f[x])
+        return self.__f[x]
+
+    def union(self, x, y):
+        fx = self.find(x)
+        fy = self.find(y)
+        if fx != fy:
+            self.__f[fy] = fx
 
 
 class AlleleUtils:
@@ -265,16 +299,21 @@ class AlleleUtils:
         return allele_list
 
     @staticmethod
-    def get_best_query_matched_ref(in_blast, qry_cds_len_db, ref_cds_len_db, threshold=0.8):
-        qry_best_db = {}
+    def get_best_query_matched_ref(in_blast, qry_cds_len_db, ref_cds_len_db, is_self_blast=False, threshold=0.0):
+        best_db = {}
         with open(in_blast, 'r') as fin:
             for line in fin:
                 qry, ref, cur_iden = BlastUtils.calc_adjust_iden(line.strip().split(), qry_cds_len_db, ref_cds_len_db)
                 if cur_iden < threshold:
                     continue
-                if qry not in qry_best_db or cur_iden > qry_best_db[qry][1]:
-                    qry_best_db[qry] = [ref, cur_iden]
-        return qry_best_db
+                if is_self_blast and qry == ref:
+                    continue
+                if qry not in best_db or cur_iden > best_db[qry][1]:
+                    best_db[qry] = [ref, cur_iden]
+                if is_self_blast:
+                    if ref not in best_db or cur_iden > best_db[ref][1]:
+                        best_db[ref] = [qry, cur_iden]
+        return best_db
 
     @staticmethod
     def adjust_allele_table(in_allele, ref_gff3, ref_cds_len_db, hap_gff3, hap_cds_len_db,
@@ -283,10 +322,16 @@ class AlleleUtils:
         flog = open(log_file, 'w')
 
         flog.write("Loading ref blast\n")
-        ref_blast_db = AlleleUtils.get_best_query_matched_ref(ref_blast, hap_cds_len_db, ref_cds_len_db)
+        ref_blast_db = AlleleUtils.get_best_query_matched_ref(ref_blast, hap_cds_len_db, ref_cds_len_db, False)
+        with open("ref_blast.match", 'w') as fout:
+            for qry in sorted(ref_blast_db):
+                fout.write("%s\t%s\t%f\n" % (qry, ref_blast_db[qry][0], ref_blast_db[qry][1]))
 
         flog.write("Loading hap blast\n")
         hap_blast_db = AlleleUtils.get_best_query_matched_ref(hap_blast, hap_cds_len_db, hap_cds_len_db)
+        with open("hap_blast.match", 'w') as fout:
+            for qry in sorted(hap_blast_db):
+                fout.write("%s\t%s\t%f\n" % (qry, hap_blast_db[qry][0], hap_blast_db[qry][1]))
 
         flog.write("Loading ref gff3\n")
         ref_db = {"NA": ["NA", "NA"]}
@@ -443,20 +488,22 @@ class GmapUtils:
     @staticmethod
     def merge_allele(region_list, overlap_ratio):
         alleles = []
-        last_ep = 0
-        last_len = 0
-        for sp, ep, gene in sorted(region_list):
-            cur_len = ep - sp + 1
-            if last_ep == 0:
-                alleles.append([])
-                alleles[-1].append(gene)
-            else:
-                if sp > last_ep or last_ep - sp + 1 < ((cur_len + last_len) / 2.) * overlap_ratio:
-                    alleles.append([])
-                alleles[-1].append(gene)
-            if ep > last_ep:
-                last_ep = ep
-                last_len = cur_len
+        uf = UnionFind(len(region_list))
+        for i in range(len(region_list) - 1):
+            sp1, ep1, gene1 = region_list[i]
+            for j in range(i + 1, len(region_list)):
+                sp2, ep2, gene2 = region_list[j]
+                ovlp_len = min(ep1, ep2) - max(sp1, sp2) + 1
+                if ovlp_len * 2. / (ep2 - sp2 + 1 + ep1 - sp1 + 1) >= overlap_ratio:
+                    uf.union(i, j)
+        grouped_genes = {}
+        for i in range(len(region_list)):
+            group_id = uf.find(i)
+            if group_id not in grouped_genes:
+                grouped_genes[group_id] = []
+            grouped_genes[group_id].append(region_list[i][2])
+        for group_id in grouped_genes:
+            alleles.append(grouped_genes[group_id])
         return alleles
 
     @staticmethod
