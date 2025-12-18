@@ -42,7 +42,7 @@ def main():
         help="threshold of gene pair coordinate overlap "
              "identified by GMAP, default: 0.8",
         type=float,
-        default=0.8,
+        default=0.5,
     )
     parser_construct.add_argument(
         "-b", "--blast_round", help="blast round, default: 2", type=int, default=2
@@ -52,6 +52,12 @@ def main():
         help="threshold of blast result which defined as matches*2/(query_length+reference_length), default: 0.8",
         type=float,
         default=0.8,
+    )
+    parser_construct.add_argument(
+        "--reciprocal",
+        help="add genes to allele table by blast with reciprocal, if set, blast_threshold would be ignored, "
+             "default: False",
+        action="store_true",
     )
     parser_construct.add_argument(
         "-e", "--TE", help='TE gff3 for filtering, default: ""', default=""

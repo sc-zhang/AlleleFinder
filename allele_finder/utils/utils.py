@@ -69,14 +69,17 @@ class FastaUtils:
 
     @staticmethod
     def check_fasta_type(fasta_file):
+        fasta_type = ""
         with open(fasta_file, 'r') as fin:
             for line in fin:
                 if line[0] == ">":
                     continue
                 if "M" in line.upper():
-                    return "prot"
+                    fasta_type = "prot"
                 else:
-                    return "nucl"
+                    fasta_type = "nucl"
+                break
+        return fasta_type
 
     @staticmethod
     def get_seq_ids(fasta_file):
@@ -143,23 +146,51 @@ class FastaUtils:
 
 class BlastUtils:
     @staticmethod
-    def allele_blast(in_blast, cds_len_db, threshold):
-        allele_list = []
-        used_genes = {}
+    def calc_adjust_iden(single_blast_row: list, qry_len_db: dict, ref_len_db: dict):
+        qry = single_blast_row[0]
+        ref = single_blast_row[1]
+        qry_len = qry_len_db[qry]
+        ref_len = ref_len_db[ref]
+        match = float(single_blast_row[2]) / 100. * float(single_blast_row[3])
+        adjust_identity = match * 2. / (qry_len + ref_len)
+        return qry, ref, adjust_identity
+
+    @staticmethod
+    def get_reciprocal_blast_db(in_blast, qry_cds_len_db, ref_cds_len_db):
+        ref_best_db = {}
+        qry_best_db = {}
+        reciprocal_blast_db = {}
         with open(in_blast, 'r') as fin:
             for line in fin:
-                data = line.strip().split()
-                qry = data[0]
-                target = data[1]
-                qry_len = cds_len_db[qry]
-                target_len = cds_len_db[target]
-                match = float(data[2]) / 100. * float(data[3])
-                cur_iden = match * 2. / (qry_len + target_len)
-                if cur_iden < threshold:
-                    continue
+                qry, ref, cur_iden = BlastUtils.calc_adjust_iden(line.strip().split(), qry_cds_len_db, ref_cds_len_db)
+                if qry not in qry_best_db or cur_iden > qry_best_db[qry][1]:
+                    qry_best_db[qry] = [ref, cur_iden]
+                if ref not in ref_best_db or cur_iden > ref_best_db[ref][1]:
+                    ref_best_db[ref] = [qry, cur_iden]
+        for qry in qry_best_db:
+            ref = qry_best_db[qry][0]
+            if ref in ref_best_db and ref_best_db[ref][0] == qry:
+                reciprocal_blast_db[qry] = ref
+        return reciprocal_blast_db
+
+    @staticmethod
+    def allele_blast(in_blast, cds_len_db, threshold, is_reciprocal=False):
+        allele_list = []
+        used_genes = set()
+        if is_reciprocal:
+            reciprocal_blast_db = BlastUtils.get_reciprocal_blast_db(in_blast, cds_len_db, cds_len_db)
+            for qry in reciprocal_blast_db:
                 if qry not in used_genes:
-                    used_genes[qry] = 1
-                    allele_list.append([qry, target])
+                    allele_list.append([qry, reciprocal_blast_db[qry]])
+        else:
+            with open(in_blast, 'r') as fin:
+                for line in fin:
+                    qry, ref, cur_iden = BlastUtils.calc_adjust_iden(line.strip().split(), cds_len_db, cds_len_db)
+                    if cur_iden < threshold:
+                        continue
+                    if qry not in used_genes:
+                        used_genes.add(qry)
+                        allele_list.append([qry, ref])
         return allele_list
 
 
@@ -237,40 +268,26 @@ class AlleleUtils:
         return allele_list
 
     @staticmethod
+    def get_best_query_matched_ref(in_blast, qry_cds_len_db, ref_cds_len_db):
+        qry_best_db = {}
+        with open(in_blast, 'r') as fin:
+            for line in fin:
+                qry, ref, cur_iden = BlastUtils.calc_adjust_iden(line.strip().split(), qry_cds_len_db, ref_cds_len_db)
+                if qry not in qry_best_db or cur_iden > qry_best_db[qry][1]:
+                    qry_best_db[qry] = [ref, cur_iden]
+        return qry_best_db
+
+    @staticmethod
     def adjust_allele_table(in_allele, ref_gff3, ref_cds_len_db, hap_gff3, hap_cds_len_db,
-                            ref_blast, hap_blast, blast_threshold, tandem, allele_num, out_allele,
+                            ref_blast, hap_blast, tandem, allele_num, out_allele,
                             is_mono, log_file):
         flog = open(log_file, 'w')
+
         flog.write("Loading ref blast\n")
-        ref_blast_db = {}
-        with open(ref_blast, 'r') as fin:
-            for line in fin:
-                data = line.strip().split()
-                hap_gn = data[0]
-                ref_gn = data[1]
-                hap_len = hap_cds_len_db[hap_gn]
-                ref_len = ref_cds_len_db[ref_gn]
-                match = float(data[2]) / 100. * float(data[3])
-                cur_iden = match * 2. / (hap_len + ref_len)
-                if cur_iden < blast_threshold:
-                    continue
-                if hap_gn not in ref_blast_db or cur_iden > ref_blast_db[hap_gn][1]:
-                    ref_blast_db[hap_gn] = [ref_gn, cur_iden]
+        ref_blast_db = AlleleUtils.get_best_query_matched_ref(ref_blast, hap_cds_len_db, ref_cds_len_db)
 
         flog.write("Loading hap blast\n")
-        hap_blast_db = {}
-        with open(hap_blast, 'r') as fin:
-            for line in fin:
-                data = line.strip().split()
-                gn1 = data[0]
-                gn2 = data[1]
-                glen1 = hap_cds_len_db[gn1]
-                glen2 = hap_cds_len_db[gn2]
-                match = float(data[2]) / 100. * float(data[3])
-                cur_iden = match * 2. / (glen1 + glen2)
-                if gn1 != gn2 and cur_iden >= blast_threshold:
-                    if gn1 not in hap_blast_db or cur_iden > hap_blast_db[gn1][1]:
-                        hap_blast_db[gn1] = [gn2, cur_iden]
+        hap_blast_db = AlleleUtils.get_best_query_matched_ref(hap_blast, hap_cds_len_db, hap_cds_len_db)
 
         flog.write("Loading ref gff3\n")
         ref_db = {"NA": ["NA", "NA"]}
@@ -317,6 +334,7 @@ class AlleleUtils:
         with open(in_allele, 'r') as fin:
             for line in fin:
                 data = line.strip().split(',')
+                candidate_allele_genes = set(data)
                 line_cnt += 1
                 for gid in data:
                     if gid not in hap_db:
@@ -332,7 +350,7 @@ class AlleleUtils:
                             ref_id = hap_blast_db[gid][0]
                     else:
                         ref_id = gid
-                    if ref_id not in ref_blast_db or ref_id not in data:
+                    if ref_id not in ref_blast_db or ref_id not in candidate_allele_genes:
                         ref_gn = "NA:::%d" % line_cnt
                     else:
                         ref_gn = ref_blast_db[ref_id][0]

@@ -62,7 +62,8 @@ Sub commands:
 #### Usage
 
 ```bash
-usage: allelefinder.py construct [-h] -r REF -d REF_CDS -f REF_GFF3 -c CDS -g GFF3 -n NUM_ALLELE [-m] [--ovlp_ratio OVLP_RATIO] [-b BLAST_ROUND] [--blast_threshold BLAST_THRESHOLD] [-e TE] [-j TE_OVERLAP] [--paralog_only] [-w WORKDIR] [-t THREADS]
+usage: allelefinder.py construct [-h] -r REF -d REF_CDS -f REF_GFF3 -c CDS -g GFF3 -n NUM_ALLELE [-m] [--ovlp_ratio OVLP_RATIO] [-b BLAST_ROUND] [--blast_threshold BLAST_THRESHOLD] [--reciprocal] [-e TE] [-j TE_OVERLAP] [--paralog_only] [-w WORKDIR]
+                                 [-t THREADS]
 
 options:
   -h, --help            show this help message and exit
@@ -81,7 +82,8 @@ options:
   -b, --blast_round BLAST_ROUND
                         blast round, default: 2
   --blast_threshold BLAST_THRESHOLD
-                        threshold of blast result which defined as matches*2/(query_length+reference_length), default: 0.8
+                        threshold of blast result which defined as matches*2/(query_length+reference_length), default: 0.5
+  --reciprocal          add genes to allele table by blast with reciprocal, if set, blast_threshold would be ignored, default: False
   -e, --TE TE           TE gff3 for filtering, default: ""
   -j, --TE_overlap TE_OVERLAP
                         threshold of TE overlap, default: 0.3, only effect when TE is not NULL
