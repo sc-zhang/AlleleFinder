@@ -31,7 +31,7 @@ def main(args):
     wrkdir = args.workdir
     threads = args.threads
     pipeline(ref, ref_cds, ref_gff3, cds, gff3, allele_count, is_mono,
-             ovlp_ratio, blast_round, blast_threshold, blast_threshold,
+             ovlp_ratio, blast_round, blast_threshold, blast_reciprocal,
              te_file, te_thres, te_filter_only_paralog, wrkdir, threads)
 
 
@@ -104,36 +104,36 @@ def pipeline(ref, ref_cds, ref_gff3, cds, gff3, allele_count, is_mono,
     if not path.exists("03.blast"):
         makedirs("03.blast")
 
-    curdir = getcwd()
+    cur_dir = getcwd()
     Message.info("\tEntering: blast")
     chdir("03.blast")
 
     hap_cds_len_db = FastaUtils.get_seq_length(cds)
     for i in range(0, blast_count):
         Message.info("\tStarting iteration %02d" % (i + 1))
-        outpre = "iter%02d" % (i + 1)
-        single_fa = outpre + "_single.fa"
-        multi_fa = outpre + "_multi.fa"
-        out_blast = outpre + ".blast"
+        out_pre = "iter%02d" % (i + 1)
+        single_fa = out_pre + "_single.fa"
+        multi_fa = out_pre + "_multi.fa"
+        out_blast = out_pre + ".blast"
         if not (path.exists(single_fa) and path.exists(multi_fa)):
-            FastaUtils.split_fasta_with_allele(cds, backbone, outpre)
+            FastaUtils.split_fasta_with_allele(cds, backbone, out_pre)
         else:
             Message.info("\tIter %02d, Fasta file found, skipping..." % (i + 1))
         if not path.exists(out_blast):
             blaster = BlastRunner()
-            blaster.blast(multi_fa, single_fa, outpre + "db", "1e-3", out_blast, 1, threads)
+            blaster.blast(multi_fa, single_fa, out_pre + "db", "1e-3", out_blast, 1, threads)
         else:
             Message.info("\tIter %02d, blast file found, skipping..." % (i + 1))
         final_allele.extend(BlastUtils.allele_blast(out_blast, hap_cds_len_db, blast_threshold, blast_reciprocal))
         final_allele = AlleleUtils.merge_allele(final_allele)
-        backbone = outpre + ".csv"
+        backbone = out_pre + ".csv"
         if not path.exists(backbone):
             with open(backbone, 'w') as fout:
                 for allele in sorted(final_allele):
                     fout.write("%s\n" % (",".join(sorted(allele))))
 
     Message.info("\tLeaving: 03.blast")
-    chdir(curdir)
+    chdir(cur_dir)
 
     Message.info("Step5: Writing allele table")
     with open("allele.csv", 'w') as fout:
@@ -144,7 +144,7 @@ def pipeline(ref, ref_cds, ref_gff3, cds, gff3, allele_count, is_mono,
     if not (path.exists("04.ref_adjust")):
         makedirs("04.ref_adjust")
 
-    curdir = getcwd()
+    cur_dir = getcwd()
     Message.info("\tEntering: 04.ref_adjust")
     chdir("04.ref_adjust")
 
@@ -159,7 +159,7 @@ def pipeline(ref, ref_cds, ref_gff3, cds, gff3, allele_count, is_mono,
     out_blast = path.abspath(out_blast)
 
     Message.info("Leaving: 04.ref_adjust")
-    chdir(curdir)
+    chdir(cur_dir)
 
     allele_file = "allele.adjusted.txt"
     ref_cds_len_db = FastaUtils.get_seq_length(ref_cds)
