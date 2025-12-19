@@ -323,22 +323,10 @@ class AlleleUtils:
 
         flog.write("Loading ref blast\n")
         ref_blast_db = AlleleUtils.get_best_query_matched_ref(ref_blast, hap_cds_len_db, ref_cds_len_db, False)
-        # with open("ref_blast.match", 'w') as fout:
-        #     for qry in sorted(ref_blast_db):
-        #         fout.write("%s\t%s\t%f\n" % (qry, ref_blast_db[qry][0], ref_blast_db[qry][1]))
 
         flog.write("Loading hap blast\n")
         hap_blast_db = AlleleUtils.get_best_query_matched_ref(hap_blast, hap_cds_len_db, hap_cds_len_db, True)
-        hap_adj_iden_db = BlastUtils.get_self_blast_adjust_iden(hap_blast, hap_cds_len_db)
-
-        # with open("hap_blast.match", 'w') as fout:
-        #     for qry in sorted(hap_blast_db):
-        #         fout.write("%s\t%s\t%f\n" % (qry, hap_blast_db[qry][0], hap_blast_db[qry][1]))
-        #
-        # with open("hap_blast.iden", 'w') as fout:
-        #     for qry in sorted(hap_adj_iden_db):
-        #         for ref in hap_adj_iden_db[qry]:
-        #             fout.write("%s\t%s\t%f\n" % (qry, ref, hap_adj_iden_db[qry][ref]))
+        # hap_adj_iden_db = BlastUtils.get_self_blast_adjust_iden(hap_blast, hap_cds_len_db)
 
         flog.write("Loading ref gff3\n")
         ref_db = {"NA": ["NA", "NA"]}
