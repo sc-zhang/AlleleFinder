@@ -6,17 +6,17 @@ import random
 
 class FastaUtils:
     @staticmethod
-    def get_full_same_seqs(fasta_file):
+    def get_full_same_seqs(fasta_file, return_id_set_only=False):
         seq_db = {}
-        with open(fasta_file, 'r') as fin:
+        with open(fasta_file, "r") as fin:
             gid = ""
             seq = []
             for line in fin:
                 if line.strip() == "":
                     continue
-                if line[0] == '>':
+                if line[0] == ">":
                     if seq:
-                        full_seq = ''.join(seq)
+                        full_seq = "".join(seq)
                         if full_seq not in seq_db:
                             seq_db[full_seq] = set()
                         seq_db[full_seq].add(gid)
@@ -25,26 +25,38 @@ class FastaUtils:
                 else:
                     seq.append(line.strip().upper())
             if seq:
-                full_seq = ''.join(seq)
+                full_seq = "".join(seq)
                 if full_seq not in seq_db:
                     seq_db[full_seq] = set()
                 seq_db[full_seq].add(gid)
 
-        retain_db = {}
-        dup_db = {}
-        for _ in seq_db:
-            if len(seq_db[_]) != 1:
-                seq_ids = list(seq_db[_])
-                random.shuffle(seq_ids)
-                retain_id = seq_ids[0]
-                for gid in seq_db[_]:
-                    retain_db[gid] = retain_id
-                dup_db[retain_id] = []
-                for gid in seq_db[_]:
-                    if gid != retain_id:
-                        dup_db[retain_id].append(gid)
+        if return_id_set_only:
+            full_same_ids = set()
+            full_same_ids_db = {}
+            idx = 0
+            for _ in seq_db:
+                if len(seq_db[_]) > 1:
+                    full_same_ids.update(seq_db[_])
+                    if idx not in full_same_ids_db:
+                        full_same_ids_db[idx] = seq_db[_]
+                        idx += 1
+            return full_same_ids, full_same_ids_db
+        else:
+            retain_db = {}
+            dup_db = {}
+            for _ in seq_db:
+                if len(seq_db[_]) != 1:
+                    seq_ids = list(seq_db[_])
+                    random.shuffle(seq_ids)
+                    retain_id = seq_ids[0]
+                    for gid in seq_db[_]:
+                        retain_db[gid] = retain_id
+                    dup_db[retain_id] = []
+                    for gid in seq_db[_]:
+                        if gid != retain_id:
+                            dup_db[retain_id].append(gid)
 
-        return retain_db, dup_db
+            return retain_db, dup_db
 
     @staticmethod
     def filter_fasta(in_fasta, out_fasta, drop_id_set):
