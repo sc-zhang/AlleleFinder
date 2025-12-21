@@ -92,6 +92,17 @@ def main():
     parser_cleanup.add_argument("--by_pep", help="filter by PEP sequences", action="store_true")
     parser_cleanup.set_defaults(func=allele_finder.workflow.cleanup_pipe.main)
 
+    parser_rescue = subparsers.add_parser(
+        "rescue", help="Rescue genes with duplicated sequences which be cleaned by \"cleanup\" method"
+    )
+    parser_rescue.add_argument("-i", "--input", help="Input allele table", required=True)
+    parser_rescue.add_argument("--gff3", help="Input GFF3 file before cleanup", required=True)
+    parser_rescue.add_argument("--cds", help="Input CDS file before cleanup", required=True)
+    parser_rescue.add_argument("--pep",
+                               help="Input PEP file before cleanup, required when cleanup was run with --by_pep")
+    parser_rescue.add_argument("-o", "--output", help="Output rescued allele table", required=True)
+    parser_rescue.set_defaults(func=allele_finder.workflow.rescue_pipe.main)
+
     parser_statistic = subparsers.add_parser("stat", help="Statistic allele table")
     parser_statistic.add_argument(
         "-i", "--input", help="Input allele table", required=True

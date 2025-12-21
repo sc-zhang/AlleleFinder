@@ -169,6 +169,23 @@ options:
 
 > **Notice:** CDS file and GFF3 file are required, PEP file is optional.
 
+* Rescue genes which be cleaned up
+
+If the cleanup method was applied, user may want to add genes which be cleanup onto allele table again the rescue method
+would to do like this.
+
+```bash
+usage: allelefinder.py rescue [-h] -i INPUT --gff3 GFF3 --cds CDS [--pep PEP] -o OUTPUT
+
+options:
+  -h, --help           show this help message and exit
+  -i, --input INPUT    Input allele table
+  --gff3 GFF3          Input GFF3 file before cleanup
+  --cds CDS            Input CDS file before cleanup
+  --pep PEP            Input PEP file before cleanup, required when cleanup was run with --by_pep
+  -o, --output OUTPUT  Output rescued allele table
+```
+
 * Adjust paralog genes
 
 If there are too many genes be marked with paralog, you can use command below to pull them down as new alleles
