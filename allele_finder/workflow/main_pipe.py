@@ -80,6 +80,18 @@ def main():
     )
     parser_construct.set_defaults(func=allele_finder.workflow.construct_pipe.main)
 
+    parser_statistic = subparsers.add_parser("stat", help="Statistic allele table")
+    parser_statistic.add_argument(
+        "-i", "--input", help="Input allele table", required=True
+    )
+    parser_statistic.add_argument(
+        "-g", "--gff3", help="GFF3 file of polyploid", required=True
+    )
+    parser_statistic.add_argument(
+        "-o", "--output", help="Prefix of output file", required=True
+    )
+    parser_statistic.set_defaults(func=allele_finder.workflow.statistic_pipe.main)
+
     parser_cleanup = subparsers.add_parser(
         "cleanup", help="Remove duplicated sequences from cds, pep and gff3 files"
     )
@@ -102,18 +114,6 @@ def main():
                                help="Input PEP file before cleanup, required when cleanup was run with --by_pep")
     parser_rescue.add_argument("-o", "--output", help="Output rescued allele table", required=True)
     parser_rescue.set_defaults(func=allele_finder.workflow.rescue_pipe.main)
-
-    parser_statistic = subparsers.add_parser("stat", help="Statistic allele table")
-    parser_statistic.add_argument(
-        "-i", "--input", help="Input allele table", required=True
-    )
-    parser_statistic.add_argument(
-        "-g", "--gff3", help="GFF3 file of polyploid", required=True
-    )
-    parser_statistic.add_argument(
-        "-o", "--output", help="Prefix of output file", required=True
-    )
-    parser_statistic.set_defaults(func=allele_finder.workflow.statistic_pipe.main)
 
     parser_adjust = subparsers.add_parser(
         "adjust", help="Adjust allele table with " "too many genes be marked as paralog"

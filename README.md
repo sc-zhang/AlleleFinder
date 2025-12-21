@@ -59,17 +59,18 @@ source ~/.bash_profile
 ### 1. main program
 
 ```bash
-usage: allelefinder.py [-h] [-v] {construct,cleanup,stat,adjust} ...
+usage: allelefinder.py [-h] [-v] {construct,stat,cleanup,rescue,adjust} ...
 
 options:
   -h, --help            show this help message and exit
   -v, --version         show program's version number and exit
 
 Sub commands:
-  {construct,cleanup,stat,adjust}
+  {construct,stat,cleanup,rescue,adjust}
     construct           Construct allele table
-    cleanup             Remove same CDS from cds, pep and gff3 files
     stat                Statistic allele table
+    cleanup             Remove duplicated sequences from cds, pep and gff3 files
+    rescue              Rescue genes with duplicated sequences which be cleaned by "cleanup" method
     adjust              Adjust allele table with too many genes be marked as paralog
 ```
 
