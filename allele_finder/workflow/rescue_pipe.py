@@ -78,6 +78,11 @@ def rescue(in_allele_file, in_gff3_file, in_cds_file, in_pep_file, out_allele_fi
                         break
 
     Message.info("Adding cleaned genes and writing new allele table")
+    rescued_by_cds_allele_cnt = 0
+    rescued_by_cds_para_cnt = 0
+    rescued_by_pep_allele_cnt = 0
+    rescued_by_pep_para_cnt = 0
+
     with open(out_allele_file, "w") as fout:
         fout.write("%s\n" % allele_table_header)
         for row in range(len(allele_table)):
@@ -92,7 +97,7 @@ def rescue(in_allele_file, in_gff3_file, in_cds_file, in_pep_file, out_allele_fi
                         gid = sub_gene.split("-")[0]
                     else:
                         gid = sub_gene
-                    sub_genes.add(sub_gene)
+                    sub_genes.add(gid)
 
             # get identical genes and allele genes which could be added to current allele table
             cur_identical_genes = set()
@@ -107,31 +112,42 @@ def rescue(in_allele_file, in_gff3_file, in_cds_file, in_pep_file, out_allele_fi
                         if gid not in identical_gene_set:
                             cur_partial_identical_genes.add(gid)
 
-            # add identical genes
+            # add genes with same CDS sequences
             for gene in cur_identical_genes:
                 if gene not in hap_db:
                     continue
                 _, hap = hap_db[gene]
                 if cur_row[hap][0] == "NA":
                     cur_row[hap][0] = gene
+                    rescued_by_cds_allele_cnt += 1
                 else:
                     cur_row[hap].append(gene + "-P")
+                    rescued_by_cds_para_cnt += 1
 
-            # add allele genes
+            # add genes with same PEP sequences
             for gene in cur_partial_identical_genes:
                 if gene not in hap_db:
                     continue
                 _, hap = hap_db[gene]
                 if cur_row[hap][0] == "NA":
                     cur_row[hap][0] = gene
+                    rescued_by_pep_allele_cnt += 1
                 else:
                     cur_row[hap].append(gene + "-P")
+                    rescued_by_pep_para_cnt += 1
 
             info = allele_table[row][:3]
             for _ in cur_row:
                 info.append(",".join(_))
             fout.write("%s\n" % ("\t".join(info)))
 
+    Message.info(
+        "%s allele genes and %s paralog genes were rescued with same CDS sequences" % (rescued_by_cds_allele_cnt,
+                                                                                       rescued_by_cds_para_cnt))
+    Message.info(
+        "%s allele genes and %s paralog genes were rescued with same PEP sequences but different CDS sequences" % (
+            rescued_by_pep_allele_cnt, rescued_by_pep_para_cnt)
+    )
     Message.info("Finished")
 
 
