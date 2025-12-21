@@ -171,8 +171,8 @@ options:
 
 * Rescue genes which be cleaned up
 
-If the cleanup method was applied, user may want to add genes which be cleanup onto allele table again the rescue method
-would to do like this.
+If the cleanup method was applied, user may want to add genes which be cleanup onto allele table again,
+the rescue method would to do like this.
 
 ```bash
 usage: allelefinder.py rescue [-h] -i INPUT --gff3 GFF3 --cds CDS [--pep PEP] -o OUTPUT
