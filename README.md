@@ -4,7 +4,12 @@
 
 ## Introduction
 
-This software is used for identifying allele genes from polyploid genome.
+This software is used to identify allelic genes from polyploid genomes. It can also work as a module of [Allele-Express](https://github.com/xiaochen-eden/Allele-Express) for allele-specific expression (ASE) analysis.
+
+
+## How to cite
+> AlleleFinder, which serves as an independent module of AlleleExpress, has now been published in Nature.  
+> Wang, J., Li, X., Wang, Y. et al. Genetic architecture of sugarcane traits in a polyploid genomics framework. Nature (2026). https://doi.org/10.1038/s41586-026-10576-7
 
 ## Overview
 
