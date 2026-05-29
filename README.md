@@ -8,7 +8,8 @@ This software is used to identify allelic genes from polyploid genomes. It can a
 
 
 ## How to cite
-> AlleleFinder, which serves as an independent module of AlleleExpress, has now been published in Nature.  
+> AlleleFinder, which serves as an independent module of the workflow described in [Allele-Express](https://github.com/xiaochen-eden/Allele-Express), which has been published in Nature.  
+> If you use this repository in academic work, please consider citing:  
 > Wang, J., Li, X., Wang, Y. et al. Genetic architecture of sugarcane traits in a polyploid genomics framework. Nature (2026). https://doi.org/10.1038/s41586-026-10576-7
 
 ## Overview
